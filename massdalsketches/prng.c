@@ -501,3 +501,33 @@ long double zipf(double theta, long n) {
 	return(val);
 }
 */
+
+long my_fastzipf(double theta, long n, double zetan, prng_type * prng) {
+
+  // this draws values from the zipf distribution
+  // this is mainly useful for test generation purposes
+  // n is range, theta is skewness parameter 
+  // theta = 0 gives uniform dbn,
+  // theta > 1 gives highly skewed dbn. 
+  // original code due to Flip Korn, used with permission
+
+	double alpha;
+	double eta;
+	long u;
+	long uz;
+	long val;
+
+  // randinit must be called before entering this procedure for
+  // the first time since it uses the random generators
+
+	alpha = 1. / (1. - theta);
+	eta = (1. - pow(2./n, 1. - theta)) / (1. - zeta(2.,theta)/zetan);
+
+	u = prng_int(prng);
+	uz = u * zetan;
+	if (uz < 1.) val = 1;
+	else if (uz < (1. + pow(0.5, theta))) val = 2;
+	else val = 1 + (long)(n * pow(eta*u - eta + 1., alpha));
+
+	return(val);
+}
