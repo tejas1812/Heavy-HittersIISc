@@ -17,11 +17,11 @@ int main()
 	generate_rand_using_prng(b,prng);
 	generate_rand_using_prng(x,prng);
 	
-	//char *x=add_arrays(a,b,sizeofdata,sizeofdata);
-	
 	printf("a: %s\n",a);
 	printf("b: %s\n",b);
 	printf("x: %s\n",x);
+	
+	//the last argument to hashval is the prime number used for hashing.
 	printf("hashval of %s: %lld\n",x,hashval(x,a,b,2917));
 	
 	deallocate_array(a);
