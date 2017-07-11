@@ -17,8 +17,6 @@ int main()
 	generate_rand_using_prng(b,prng);
 	generate_rand_using_prng(x,prng);
 	
-	//char *x=add_arrays(a,b,sizeofdata,sizeofdata);
-	
 	printf("a: %s\n",a);
 	printf("b: %s\n",b);
 	printf("x: %s\n",x);
