@@ -65,6 +65,8 @@ char * mul_arrays(char *a, char* b, int size_a, int size_b)
 	}
 	return res;
 }
+
+//returns a%b where a is a string and b is of type long long.
 long long mod_arrays(char *a, long long b, int size_a)
 {
 	long long result=0;
@@ -75,6 +77,7 @@ long long mod_arrays(char *a, long long b, int size_a)
 	return result;
 }
 
+//returns the hashvalue for num computed as ((a*num)+b)%modval
 long long hashval(char *num, char *a,char *b, long long modval)
 {
 	char * temp=mul_arrays(num,a,strlen(num)+1,strlen(a)+1);
@@ -88,6 +91,7 @@ void deallocate_array(char * a)
 	free(a);
 }
 
+//Call allocate_arrays before calling this function.
 void generate_rand_using_prng(char* a,prng_type * prng)
 {
 	int numele=num_of_elements/4;
