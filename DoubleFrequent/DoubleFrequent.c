@@ -6,6 +6,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+int DoubleFrequent_Size(DoubleFrequent_type *dfr)
+{
+	return Freq_Size(dfr->T1)+Freq_Size(dfr->T2);
+}
 DoubleFrequent_type * DoubleFrequent_Init(float phi, float epsilon, float delta)
 {
 	//for generating random values. uses prng.c
@@ -37,6 +41,7 @@ void DoubleFrequent_Insert(DoubleFrequent_type* dfr, char * item)
 	//change:
 	char * hasheditem=get_string(hashval(item, dfr->a, dfr->b, dfr->modval));
 	Freq_Update(dfr->T2,hasheditem ,dfr->modval);
+	--stream_size;
 	free(hasheditem);
 }
 
@@ -94,7 +99,7 @@ void DoubleFrequent_Report(DoubleFrequent_type* dfr)
 
 					if(count_in_T2>=(dfr->phi-dfr->epsilon)*stream_size)
 					{
-						printf("item: %s count: %d\n",i->item,count_in_T2);
+						printf("%s:%d\n",i->item,count_in_T2);
 					}								
 				}
 				i=i->nexting;

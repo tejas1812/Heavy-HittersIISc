@@ -19,3 +19,4 @@ typedef struct DoubleFrequent_type
 DoubleFrequent_type * DoubleFrequent_Init(float phi, float epsilon, float delta);
 void DoubleFrequent_Insert(DoubleFrequent_type* dfr, char * item);
 void DoubleFrequent_Report(DoubleFrequent_type* dfr);
+int DoubleFrequent_Size(DoubleFrequent_type *dfr);
