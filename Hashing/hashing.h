@@ -16,4 +16,4 @@ char * get_string(long long val);
 long long mod_arrays2(char *a, long long b);
 char * mul_arrays(char*, char*, int ,int );
 void zipf(double alpha,unsigned int m);
-void generate_data();
+void generate_data(unsigned int N);

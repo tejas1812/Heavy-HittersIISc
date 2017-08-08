@@ -203,7 +203,7 @@ void zipf(double alpha,unsigned int m)
 	free(val);
 }
 
-void generate_data()
+void generate_data(unsigned int N)
  {
 	prng_type* prng=prng_Init(time(NULL),3);
  	srand((unsigned int)time(NULL));
@@ -216,8 +216,9 @@ void generate_data()
     {
     	char* a =(char*)malloc(sizeofdata);
     	double x  = ((double)rand()/(double)(RAND_MAX)) * no;
-		int u=sizeofdata-1;
-    	if(x<=0.02)
+		int u=sizeofdata-2;	  
+		a[u+1]='\0';  	
+		if(x<=0.02)
     	{
     		int j;	
     		for (j=0;j<u;j++)
@@ -271,6 +272,7 @@ void generate_data()
     	{
     		//char* a =(char*)malloc(sizeofdata);
     		generate_rand_using_prng(a,prng);
+			printf("%s\n",a);
     		free(a);
     	}
     }
