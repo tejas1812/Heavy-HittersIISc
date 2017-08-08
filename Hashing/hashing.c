@@ -3,7 +3,8 @@
 #include <string.h>
 #include "../massdalsketches/prng.h"
 #include "hashing.h"
-
+#include <math.h>
+#include <time.h>
 char * allocate_array(int size)
 {
 	return (char*)malloc(size);
@@ -154,3 +155,124 @@ void generate_rand_using_prng(char* a,prng_type * prng)
 	}
 	a[num_of_elements-1]='\0';
 }
+
+void zipf(double alpha,unsigned int m)
+{
+	prng_type* prng=prng_Init(time(NULL),3);
+	int n=logl(m)/log(alpha);
+	char *map[n];
+	long double zeta=1.0;
+	int i=2,j=0,temp;
+	for(;i<=n;++i)
+		zeta+=1./pow(i,alpha);
+	int freq[n],op[m];
+	double mbyzeta=m/zeta;
+	int randindex;
+	for(i=1;i<=n;++i)
+	{
+		map[i-1]=allocate_array(sizeofdata);
+		generate_rand_using_prng(map[i-1],prng);	
+		freq[i-1]=mbyzeta/pow(i,alpha);	
+		for(temp=0;temp<freq[i-1];++temp)
+			op[j++]=i;
+	}
+	for(;j<m;)
+	{	
+		op[j++]=i;
+		++i;
+	}
+	prng_Destroy(prng);
+	for(i=0;i<m;++i)
+	{
+		temp=op[i];
+		randindex=rand()%m;
+		op[i]=op[randindex];
+		op[randindex]=temp;
+	}
+	char* val=allocate_array(sizeofdata);
+	for(i=0;i<m;++i)
+	{
+		if(op[i]<=n)
+		printf("%s\n",map[op[i]-1]);
+		else
+		{
+			generate_rand_using_prng(val,prng);
+			printf("%s\n",val);
+		}
+	}
+	free(val);
+}
+
+void generate_data()
+ {
+	prng_type* prng=prng_Init(time(NULL),3);
+ 	srand((unsigned int)time(NULL));
+
+    double no = 1.0;
+    double i;
+    
+
+    for(i=0;i<=N-1;i++)    	
+    {
+    	char* a =(char*)malloc(sizeofdata);
+    	double x  = ((double)rand()/(double)(RAND_MAX)) * no;
+		int u=sizeofdata-1;
+    	if(x<=0.02)
+    	{
+    		int j;	
+    		for (j=0;j<u;j++)
+    			a[j] = 0 + '0';
+        	a[j] = '0';
+        	printf("%s\n" ,a);
+        	free(a);
+    		//a[0]+=1;
+    	}
+    	else if(x<=0.04)
+    	{
+    		int j;	
+    		for (j=0;j<u;j++)
+    			a[j] = 0 + '0';
+        	a[j] = '1';
+        	printf("%s\n" ,a);
+        	free(a);
+    		//a[1]+=1;
+    	}
+    	else if(x<=0.06)
+    	{
+    		int j;	
+    		for (j=0;j<u;j++)
+    			a[j] = 0 + '0';
+        	a[j] = '2';
+        	printf("%s\n" ,a);
+        	free(a);	
+    		//a[2]+=1;
+    	}
+    	else if(x<=0.08)
+    	{
+    		int j;	
+    		for (j=0;j<u;j++)
+    			a[j] = 0 + '0';
+        	a[j] = '3';
+        	printf("%s\n" ,a);
+        	free(a);
+    		//a[3]+=1;
+    	}
+    	else if(x<=0.10)
+    	{
+    		int j;	
+    		for (j=0;j<u;j++)
+    			a[j] = 0 + '0';
+        	a[j] = '4';
+        	printf("%s\n" ,a);
+        	free(a);        	
+    		//a[4]+=1;
+    	}
+    	else
+    	{
+    		//char* a =(char*)malloc(sizeofdata);
+    		generate_rand_using_prng(a,prng);
+    		free(a);
+    	}
+    }
+	prng_Destroy(prng);
+ }

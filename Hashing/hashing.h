@@ -1,7 +1,7 @@
 #include "../massdalsketches/prng.h"
 
 #ifndef sizeofdata
-	#define sizeofdata 128
+	#define sizeofdata 16
 #endif
 
 #ifndef num_of_elements
@@ -15,3 +15,5 @@ void generate_rand_using_prng(char* a,prng_type * prng);
 char * get_string(long long val);
 long long mod_arrays2(char *a, long long b);
 char * mul_arrays(char*, char*, int ,int );
+void zipf(double alpha,unsigned int m);
+void generate_data();

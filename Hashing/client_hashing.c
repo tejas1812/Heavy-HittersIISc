@@ -2,7 +2,14 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-
+#include "hashing.h"
+double diff(struct timespec* s,struct timespec* e)
+{
+  double temp;
+  temp = (e->tv_sec - s->tv_sec)*1000;
+  temp = temp + (e->tv_nsec - s->tv_nsec)*0.000001;
+  return temp;
+}
 int main()
 {
 	srand(time(NULL));
@@ -21,8 +28,24 @@ int main()
 	printf("b: %s\n",b);
 	printf("x: %s\n",x);
 	
-	//the last argument to hashval is the prime number used for hashing.
-	printf("hashval of %s: %lld\n",x,hashval(x,a,b,2917));
+	struct timespec s,e;	
+    char *line =allocate_array(sizeofdata+1);
+	int count;
+	scanf("%d",&count);
+
+	clock_gettime(CLOCK_REALTIME,&s);
+	while(count>0)
+	{
+		scanf("%s",line);				
+        hashval(line,a,b,2917);
+		free(line);
+		    
+	    line=allocate_array(sizeofdata+1);
+		--count;
+    }
+	free(line);
+	clock_gettime(CLOCK_REALTIME,&e);
+	printf("%f milliseconds\n",diff(&s,&e));
 	
 	deallocate_array(a);
 	deallocate_array(b);
