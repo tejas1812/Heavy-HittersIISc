@@ -22,9 +22,9 @@ int main(int argc, char **argv)
 	struct timespec s,e;
      char *line =allocate_array(sizeofdata+1);
 	int count;
-	clock_gettime(CLOCK_REALTIME,&s);
 	scanf("%d",&count);
 
+	clock_gettime(CLOCK_REALTIME,&s);
 	while(count>0)
 	{
 		scanf("%s",line);			
@@ -34,10 +34,11 @@ int main(int argc, char **argv)
 		--count;
     }
 	free(line);
+	clock_gettime(CLOCK_REALTIME,&e);
+	printf("%f milliseconds\n",diff(&s,&e));
+	printf("%d\n",SketchFrequent_Size(sfr));
     SketchFrequent_Report(sfr);
 	SketchFrequent_Destroy(sfr);
-    clock_gettime(CLOCK_REALTIME,&e);
-	printf("%f milliseconds\n",diff(&s,&e));
    
 	return 0;
 }

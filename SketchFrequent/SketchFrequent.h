@@ -22,3 +22,4 @@ SketchFrequent_type * SketchFrequent_Init(float phi, float epsilon, float delta)
 void SketchFrequent_Insert(SketchFrequent_type* sfr, char * item);
 void SketchFrequent_Report(SketchFrequent_type* sfr);
 void SketchFrequent_Destroy(SketchFrequent_type *sfr);
+int SketchFrequent_Size(SketchFrequent_type *dfr);

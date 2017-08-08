@@ -7,6 +7,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+int SketchFrequent_Size(SketchFrequent_type *dfr)
+{
+	return Freq_Size(dfr->T1)+CM_Size(dfr->T2);
+}
 SketchFrequent_type * SketchFrequent_Init(float phi, float epsilon, float delta)
 {
 	//for generating random values. uses prng.c
@@ -68,7 +72,7 @@ void SketchFrequent_Report(SketchFrequent_type* sfr)
 					{
 						//printf("item: %s count: %d\n",i->item,count_in_T2);
 					}*/
-					printf("item: %s count: %li\n",i->item,c);								
+					printf("%s:%li\n",i->item,c);								
 				}
 				i=i->nexting;
 			}
