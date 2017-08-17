@@ -1,7 +1,9 @@
 #original data in a file called op.in
 #Output of Frequent/DoubleFrequent/SketchFrequent given as input to this program
 
+#to be varied
 phi=0.01
+
 m=int(input())
 d=dict()
 for i in range(m):
