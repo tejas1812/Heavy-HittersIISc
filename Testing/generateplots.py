@@ -1,4 +1,5 @@
-#input: csv file (sample: storage in bytes_epsilon.csv)
+#input: csv file (sample: storage in bytes_epsilon.csv filename: yaxisparameter_xaxisparameter.csv)
+#format of csv file: 4 columns: (xaxisparameter, frequent, doublefrequent, sketchfrequent)
 
 import matplotlib.pyplot as plt
 import numpy as np
