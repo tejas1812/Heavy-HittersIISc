@@ -1,9 +1,12 @@
 #include "../modified_massdalsketches/frequent.h"
 #include "../modified_massdalsketches/countmin.h"
+
+#ifndef SKETCHFREQUENT_TYPE
+#define SKETCHFREQUENT_TYPE
 typedef struct SketchFrequent_type
 {
-	char *a;
-	char *b;
+  //	char *a;
+  //	char *b;
 	long l;
 	long w;	
 	
@@ -23,3 +26,5 @@ void SketchFrequent_Insert(SketchFrequent_type* sfr, char * item);
 void SketchFrequent_Report(SketchFrequent_type* sfr);
 void SketchFrequent_Destroy(SketchFrequent_type *sfr);
 int SketchFrequent_Size(SketchFrequent_type *dfr);
+
+#endif

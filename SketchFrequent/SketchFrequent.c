@@ -14,22 +14,22 @@ int SketchFrequent_Size(SketchFrequent_type *dfr)
 SketchFrequent_type * SketchFrequent_Init(float phi, float epsilon, float delta)
 {
 	//for generating random values. uses prng.c
-	prng_type *prng= prng_Init(time(NULL),3);
+  //	prng_type *prng= prng_Init(time(NULL),3);
 
 	SketchFrequent_type * sfr= malloc(sizeof(SketchFrequent_type));
 
-	sfr->a=allocate_array(sizeofdata);
-	sfr->b=allocate_array(sizeofdata); 
-	generate_rand_using_prng(sfr->a,prng);
-	generate_rand_using_prng(sfr->b,prng);
-	prng_Destroy(prng);
+	//	sfr->a=allocate_array(sizeofdata);
+	//	sfr->b=allocate_array(sizeofdata); 
+	//	generate_rand_using_prng(sfr->a,prng);
+	//	generate_rand_using_prng(sfr->b,prng);
+	//	prng_Destroy(prng);
 	//hash function : [n]->[4/(delta*epsilon^2)]
 	sfr->l=(long)2.0*log10l(1/(phi*delta));
 	sfr->w=(long)2.0/(epsilon);
 
 
-	sfr->T1 = Freq_Init(phi/2.0, sfr->a, sfr->b);
-	sfr->T2 = CM_Init(sfr->w,sfr->l);
+	sfr->T1 = Freq_Init(phi/2.0,sizeofdata);
+	sfr->T2 = CM_Init(sfr->w,sfr->l,sizeofdata);
 
 	sfr->phi=phi;
 	sfr->epsilon=epsilon;
@@ -56,7 +56,7 @@ void SketchFrequent_Report(SketchFrequent_type* sfr)
 		count=count+g->diff;
 		first=g->items;
 		i=first;
-		if (i!=NULL)
+		if (count > (sfr->phi)*stream_size/2 && i!=NULL)
 			do 
 			{
 				//x: i->item
@@ -83,8 +83,8 @@ void SketchFrequent_Report(SketchFrequent_type* sfr)
 
 void SketchFrequent_Destroy(SketchFrequent_type *sfr)
 {
-	free(sfr->a);
-	free(sfr->b);
+  //	free(sfr->a);
+  //	free(sfr->b);
 	Freq_Destroy(sfr->T1);
 	CM_Destroy(sfr->T2);
 	

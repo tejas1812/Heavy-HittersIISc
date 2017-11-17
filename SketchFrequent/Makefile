@@ -1,9 +1,13 @@
 client_sketchfrequent: client_sketchfreq.o SketchFrequent.o
-	gcc -o client_sketchfrequent client_sketchfreq.o SketchFrequent.o countmin.o frequent.o massdal.o hashing.o prng.o -lm
-client_sketchfreq.o: client_sketchfreq.c SketchFrequent.o
+	gcc -o client_sketchfrequent client_sketchfreq.o SketchFrequent.o SketchLC.o countmin.o frequent.o lcdelta.o massdal.o hashing.o prng.o -lm
+client_sketchfreq.o: client_sketchfreq.c SketchLC.c SketchFrequent.o SketchLC.o
 	gcc -c -g client_sketchfreq.c -Wall
+SketchLC.o: SketchLC.c lcdelta.o SketchLC.h countmin.o
+	gcc -c -g SketchLC.c -Wall
 SketchFrequent.o: SketchFrequent.c frequent.o SketchFrequent.h countmin.o
 	gcc -c -g SketchFrequent.c -Wall
+lcdelta.o: ../modified_massdalsketches/lcdelta.c ../modified_massdalsketches/lcdelta.h
+	gcc -c -g ../modified_massdalsketches/lcdelta.c -Wall
 countmin.o: ../modified_massdalsketches/countmin.c ../modified_massdalsketches/countmin.h hashing.o massdal.o
 	gcc -c -g ../modified_massdalsketches/countmin.c -Wall
 frequent.o: ../modified_massdalsketches/frequent.c hashing.o ../modified_massdalsketches/frequent.h
