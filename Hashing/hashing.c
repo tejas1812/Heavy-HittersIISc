@@ -137,12 +137,11 @@ void deallocate_array(char * a)
 }
 
 //Call allocate_arrays before calling this function.
-void generate_rand_using_prng(char* a,prng_type * prng)
+void generate_rand_using_prng(char* a,prng_type * prng, int len)
 {
-	int numele=num_of_elements/4;
 	int j=3;
 	int i;
-	for(i=0;i<numele;++i)
+	for(j=3;j<len;j+=4)
 	{
 		long res=prng_int(prng)%9999;
 		int count;
@@ -151,9 +150,8 @@ void generate_rand_using_prng(char* a,prng_type * prng)
 			a[j-count]=res%10+'0';
 			res=res/10;
 		}
-		j+=4;
 	}
-	a[num_of_elements-1]='\0';
+	a[len-1]='\0';
 }
 
 void zipf(double alpha,unsigned int m)
@@ -165,13 +163,14 @@ void zipf(double alpha,unsigned int m)
 	int i=2,j=0,temp;
 	for(;i<=n;++i)
 		zeta+=1./pow(i,alpha);
-	int freq[n],op[m];
+	int freq[n];
+	int* op = (int*)allocate_array(m*sizeof(int));
 	double mbyzeta=m/zeta;
 	int randindex;
 	for(i=1;i<=n;++i)
 	{
 		map[i-1]=allocate_array(sizeofdata);
-		generate_rand_using_prng(map[i-1],prng);	
+		generate_rand_using_prng(map[i-1],prng,sizeofdata);	
 		freq[i-1]=mbyzeta/pow(i,alpha);	
 		for(temp=0;temp<freq[i-1];++temp)
 			op[j++]=i;
@@ -181,7 +180,7 @@ void zipf(double alpha,unsigned int m)
 		op[j++]=i;
 		++i;
 	}
-	prng_Destroy(prng);
+	printf("here");
 	for(i=0;i<m;++i)
 	{
 		temp=op[i];
@@ -196,10 +195,18 @@ void zipf(double alpha,unsigned int m)
 		printf("%s\n",map[op[i]-1]);
 		else
 		{
-			generate_rand_using_prng(val,prng);
+		  generate_rand_using_prng(val,prng,sizeofdata);
 			printf("%s\n",val);
 		}
 	}
+
+	for(i=0;i<n;i++)
+	  printf("Frequency of %s is %d\n", map[i],freq[i]);
+
+	prng_Destroy(prng);
+	for(i=0;i<n;i++)
+	  free(map[i]);
+	free(op);
 	free(val);
 }
 
@@ -210,71 +217,81 @@ void generate_data(unsigned int N)
 
     double no = 1.0;
     double i;
-    
+    int c1=0, c2=0, c3=0, c4=0, c5=0;
 
     for(i=0;i<=N-1;i++)    	
     {
     	char* a =(char*)malloc(sizeofdata);
     	double x  = ((double)rand()/(double)(RAND_MAX)) * no;
-		int u=sizeofdata-2;	  
-		a[u+1]='\0';  	
-		if(x<=0.02)
+	int u=sizeofdata-2;	  
+	a[u+1]='\0';  	
+	if(x<=0.02)
     	{
-    		int j;	
-    		for (j=0;j<u;j++)
-    			a[j] = 0 + '0';
-        	a[j] = '0';
-        	printf("%s\n" ,a);
-        	free(a);
-    		//a[0]+=1;
+	  c1 +=1;
+	  int j;	
+	  for (j=0;j<u;j++)
+	    a[j] = 0 + '0';
+	  a[j] = '0';
+	  printf("%s\n" ,a);
+	  free(a);
+	  //a[0]+=1;
     	}
     	else if(x<=0.04)
     	{
-    		int j;	
-    		for (j=0;j<u;j++)
-    			a[j] = 0 + '0';
-        	a[j] = '1';
-        	printf("%s\n" ,a);
-        	free(a);
-    		//a[1]+=1;
+	  c2+=1;
+	  int j;	
+	  for (j=0;j<u;j++)
+	    a[j] = 0 + '0';
+	  a[j] = '1';
+	  printf("%s\n" ,a);
+	  free(a);
+	  //a[1]+=1;
     	}
     	else if(x<=0.06)
     	{
-    		int j;	
-    		for (j=0;j<u;j++)
-    			a[j] = 0 + '0';
-        	a[j] = '2';
-        	printf("%s\n" ,a);
-        	free(a);	
-    		//a[2]+=1;
+	  c3 +=1;
+	  int j;	
+	  for (j=0;j<u;j++)
+	    a[j] = 0 + '0';
+	  a[j] = '2';
+	  printf("%s\n" ,a);
+	  free(a);	
+	  //a[2]+=1;
     	}
     	else if(x<=0.08)
     	{
-    		int j;	
-    		for (j=0;j<u;j++)
-    			a[j] = 0 + '0';
-        	a[j] = '3';
-        	printf("%s\n" ,a);
-        	free(a);
-    		//a[3]+=1;
+	  c4 +=1;
+	  int j;	
+	  for (j=0;j<u;j++)
+	    a[j] = 0 + '0';
+	  a[j] = '3';
+	  printf("%s\n" ,a);
+	  free(a);
+	  //a[3]+=1;
     	}
     	else if(x<=0.10)
     	{
-    		int j;	
-    		for (j=0;j<u;j++)
-    			a[j] = 0 + '0';
-        	a[j] = '4';
-        	printf("%s\n" ,a);
-        	free(a);        	
-    		//a[4]+=1;
+	  c5 +=1;
+	  int j;	
+	  for (j=0;j<u;j++)
+	    a[j] = 0 + '0';
+	  a[j] = '4';
+	  printf("%s\n" ,a);
+	  free(a);        	
+	  //a[4]+=1;
     	}
     	else
     	{
-    		//char* a =(char*)malloc(sizeofdata);
-    		generate_rand_using_prng(a,prng);
-			printf("%s\n",a);
-    		free(a);
+	  //char* a =(char*)malloc(sizeofdata);
+	  generate_rand_using_prng(a,prng,sizeofdata);
+	  printf("%s\n",a);
+	  free(a);
     	}
     }
-	prng_Destroy(prng);
+    printf("Number of 1st planted item: %d\n", c1);
+    printf("Number of 2nd planted item: %d\n", c2);
+    printf("Number of 3rd planted item: %d\n", c3);
+    printf("Number of 4th planted item: %d\n", c4);
+    printf("Number of 5th planted item: %d\n", c5);
+    prng_Destroy(prng);
  }

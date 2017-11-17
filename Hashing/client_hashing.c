@@ -20,9 +20,9 @@ int main()
 	char *b = allocate_array(sizeofdata);
 	char *x = allocate_array(sizeofdata);
 	
-	generate_rand_using_prng(a,prng);
-	generate_rand_using_prng(b,prng);
-	generate_rand_using_prng(x,prng);
+	generate_rand_using_prng(a,prng,sizeofdata);
+	generate_rand_using_prng(b,prng,sizeofdata);
+	generate_rand_using_prng(x,prng,sizeofdata);
 	
 	printf("a: %s\n",a);
 	printf("b: %s\n",b);
@@ -32,12 +32,13 @@ int main()
     char *line =allocate_array(sizeofdata+1);
 	int count;
 	scanf("%d",&count);
+	printf("count: %d\n", count);
 
 	clock_gettime(CLOCK_REALTIME,&s);
 	while(count>0)
 	{
 		scanf("%s",line);				
-        hashval(line,a,b,2917);
+		printf("hash value: %llu\n", hashval(line,a,b,2917));
 		free(line);
 		    
 	    line=allocate_array(sizeofdata+1);
