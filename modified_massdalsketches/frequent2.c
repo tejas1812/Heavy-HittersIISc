@@ -21,7 +21,6 @@ to Creative Commons, 559 Nathan Abbott Way, Stanford, California
 #include "frequent.h"
 #include "../massdalsketches/prng.h"
 #include "../Hashing/hashing.h"
-#include <time.h>
 
 
 
@@ -478,7 +477,7 @@ void Freq_Update(freq_type * freq, char* newitem, long long modval)
 	IncrementCounter(il);
 }
   
-freq_type * Freq_Init(float eps, int maxlength)
+freq_type * Freq_Init(float eps)
 {
 	//setting a global variable epsilon to equal the value specified by the user.
 	epsilon=eps;
@@ -496,10 +495,10 @@ freq_type * Freq_Init(float eps, int maxlength)
 
   //for generating random values. uses prng.c
   prng_type *prng= prng_Init(time(NULL),3);
-  result->a=allocate_array(maxlength);
-  result->b=allocate_array(maxlength); 
-  generate_rand_using_prng(result->a,prng,maxlength);
-  generate_rand_using_prng(result->b,prng,maxlength);
+  result->a=allocate_array(sizeofdata);
+  result->b=allocate_array(sizeofdata); 
+  generate_rand_using_prng(result->a,prng);
+  generate_rand_using_prng(result->b,prng);
   prng_Destroy(prng);
   
 	//shallow copy okay? check. otherwise use strdup
@@ -507,7 +506,6 @@ freq_type * Freq_Init(float eps, int maxlength)
   //	result->b=b;
 
   result->k=k;
-  //  result->maxlength = maxlength;
   result->tblsz=2*k;  
   result->hashtable=calloc(2*k+2,sizeof(ITEMLIST *));
   //hashspace=(2*k+2)*sizeof(ITEMLIST *);
@@ -527,9 +525,12 @@ freq_type * Freq_Init(float eps, int maxlength)
   previtem->previousing=previtem;
 	
 	//using string containing zeroes instead of 0
-  zero_string=malloc(maxlength);
-  memset(zero_string,'0',maxlength);
-  zero_string[maxlength-1]='\0';
+	if(zero_string==NULL)
+	{
+		zero_string=malloc(num_of_elements);
+		memset(zero_string,'0',num_of_elements);
+		zero_string[num_of_elements-1]='\0';
+	}
 	//previtem->item=zero_string;
   previtem->item=strdup(zero_string);
   
@@ -561,7 +562,7 @@ int Freq_Size(freq_type * freq)
   ITEMLIST *i,*first;
   
   g=freq->groups;
-  printf("Length of string %s: %d\n", g->items->item, strlen(g->items->item));
+  printf("Length of each item: %d\n", strlen(g->items->item));
   while (g!=NULL) 
     {
       size += sizeof(int);

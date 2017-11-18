@@ -13,7 +13,7 @@ typedef struct CM_type{
   char **hashb;
 } CM_type;
 
-extern CM_type * CM_Init(long, long);
+extern CM_type * CM_Init(long, long, int);
 extern CM_type * CM_Copy(CM_type *);
 extern void CM_Destroy(CM_type *);
 extern int CM_Size(CM_type *);

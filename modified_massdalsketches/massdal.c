@@ -2,7 +2,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+extern FILE* stderr;
 // simple timing routines for testing
 // these use global variables, so they will not interleave well
 

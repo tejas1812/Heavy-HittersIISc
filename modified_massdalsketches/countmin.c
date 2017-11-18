@@ -35,7 +35,7 @@ double delta;                  /* probability of failure */
 /* Routines to support Count-Min sketches                               */
 /************************************************************************/
 
-CM_type * CM_Init(long width, long depth)
+CM_type * CM_Init(long width, long depth, int maxlength)
 {     // Initialize the sketch based on user-supplied size
   CM_type * cm;
   long j;
@@ -64,8 +64,8 @@ CM_type * CM_Init(long width, long depth)
 	{
 	  for (j=0;j<depth;j++)
 	    {
-        generate_rand_using_prng(cm->hasha[j], prng);
-        generate_rand_using_prng(cm->hashb[j], prng);
+	      generate_rand_using_prng(cm->hasha[j], prng, maxlength);
+	      generate_rand_using_prng(cm->hashb[j], prng, maxlength);
 	      //cm->hasha[j]=prng_int(prng) & MOD;
 	      //cm->hashb[j]=prng_int(prng) & MOD;
 	      // pick the hash functions
@@ -131,12 +131,23 @@ void CM_Destroy(CM_type * cm)
 
 int CM_Size(CM_type * cm)
 { // return the size of the sketch in bytes
-  int counts, hashes, admin;
-  if (!cm) return 0;
-  admin=sizeof(CM_type);
-  counts=cm->width*cm->depth*sizeof(long);
-  hashes=cm->depth*2*sizeof(char *) * sizeofdata;
-  return(admin + hashes + counts);
+  int j, counts=0;
+  for(j=0;j<cm->depth;j++)
+    {
+      counts += (strlen(cm->hasha[j]) + strlen(cm->hashb[j]))*sizeof(char);
+    }
+  counts += sizeof(long)* cm->depth*cm->width;
+  printf("CM depth: %d, width: %d, long size: %d\n", cm->depth, cm->width, sizeof(long));
+  printf("CM Size: %d\n", counts);
+  return counts;
+
+
+  /* int counts, hashes, admin; */
+  /* if (!cm) return 0; */
+  /* admin=sizeof(CM_type); */
+  /* counts=cm->width*cm->depth*sizeof(long); */
+  /* hashes=cm->depth*2*sizeof(char *) * sizeofdata; */
+  /* return(admin + hashes + counts); */
 }
 
 void CM_Update(CM_type * cm, char* item)

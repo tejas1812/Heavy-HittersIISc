@@ -35,7 +35,7 @@ typedef struct freq_type{
 } freq_type;
 
 
-extern freq_type * Freq_Init(float, char *, char*);
+extern freq_type * Freq_Init(float,int);
 extern void Freq_Destroy(freq_type *);
 extern void Freq_Update(freq_type *, char*, long long);
 extern int Freq_Size(freq_type *);
