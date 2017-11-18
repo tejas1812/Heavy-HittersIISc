@@ -9,7 +9,7 @@
 #include <time.h>
 
 int stream_size=0;
-char emptystring[sizeofdata];
+//char emptystring[sizeofdata];
 int SketchLC_Size(SketchLC_type *dfr, int maxlength)
 {
 	//changed this
@@ -17,8 +17,8 @@ int SketchLC_Size(SketchLC_type *dfr, int maxlength)
 }
 SketchLC_type * SketchLC_Init(float phi, float epsilon, float delta)
 {
-	memset(emptystring,'0',sizeofdata);
-	emptystring[sizeofdata-1]='\0';
+	//memset(emptystring,'0',sizeofdata);
+	//emptystring[sizeofdata-1]='\0';
 	//for generating random values. uses prng.c
   //	prng_type *prng= prng_Init(time(NULL),3);
 
@@ -56,10 +56,12 @@ void SketchLC_Report(SketchLC_type* sfr)
 {
   char** potentials = LCD_Report(sfr->T1, sfr->phi, sizeofdata);
   int m=0, count;
-  while(strcmp(potentials[m],emptystring)!=0){
-    count = LCD_PointEst(sfr->T1, potentials[m]);
+  //while(strcmp(potentials[m],emptystring)!=0){
+    while(potentials[m]!=0){
+	count = LCD_PointEst(sfr->T1, potentials[m]);
     if(count>(sfr->phi)*stream_size/2 && CM_PointEst(sfr->T2, potentials[m])>(sfr->phi)*stream_size)
       printf("%s:%d\n", potentials[m], count);
+	    ++m;
   }
   
 }
