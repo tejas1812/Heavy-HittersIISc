@@ -9,16 +9,16 @@
 
 int stream_size=0;
 
-int FreqLC_Size(FreqLC_type *lcfr, int maxlength)
+int DoubleLC_Size(DoubleLC_type *lcfr, int maxlength)
 {
   return LCD_Size((lcfr->T1)+Freq_Size(lcfr->T2), maxlength);
 }
-FreqLC_type * FreqLC_Init(float phi, float epsilon, float delta)
+DoubleLC_type * DoubleLC_Init(float phi, float epsilon, float delta)
 {
 	//for generating random values. uses prng.c
   	prng_type *prng= prng_Init(time(NULL),3);
 
-	FreqLC_type * lcfr= malloc(sizeof(FreqLC_type));
+	DoubleLC_type * lcfr= malloc(sizeof(DoubleLC_type));
 	lcfr->a=allocate_array(sizeofdata);
 	lcfr->b=allocate_array(sizeofdata); 
 	generate_rand_using_prng(lcfr->a,prng,sizeofdata);
@@ -79,21 +79,21 @@ int freq_get_count(freq_type *fr,char *item)
     }
 	return -1;
 }
-void FreqLC_Insert(FreqLC_type* lcfr, char * item)
+void DoubleLC_Insert(DoubleLC_type* lcfr, char * item)
 {
   stream_size++;
-	printf("before %s\n",item);
+	//printf("before %s\n",item);
 	LCD_Update(lcfr->T1, item);
-	printf("after\n");
+	//printf("after\n");
 	char * hasheditem=get_string(hashval(item, lcfr->a, lcfr->b, lcfr->modval));
 	Freq_Update(lcfr->T2, hasheditem,lcfr->modval);
-	printf("after !!cm\n");
+	//printf("after !!cm\n");
 }
-void FreqLC_Report(FreqLC_type* lcfr)
+void DoubleLC_Report(DoubleLC_type* lcfr)
 {
-	printf("Working");
+	//printf("Working");
   char** potentials = LCD_Report(lcfr->T1, lcfr->phi, sizeofdata);
-  printf("FREQLC output \n\n");
+  printf("DoubleLC output \n\n");
   int m=0, count;
   printf("lcfr->phi * stream_size - %lf\n" ,(lcfr->phi)*stream_size);
   while(potentials[m]!=0){
@@ -120,7 +120,7 @@ void FreqLC_Report(FreqLC_type* lcfr)
   
 }
 
-void FreqLC_Destroy(FreqLC_type *lcfr)
+void DoubleLC_Destroy(DoubleLC_type *lcfr)
 {
   //	free(sfr->a);
   //	free(sfr->b);
