@@ -1,4 +1,4 @@
-#include "FreqLC.h"
+#include "DoubleLC.h"
 #include "../modified_massdalsketches/frequent.h"
 #include "../Hashing/hashing.h"
 #include "../massdalsketches/prng.h"
