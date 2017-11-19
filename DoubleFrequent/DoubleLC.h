@@ -1,7 +1,7 @@
 #include "../modified_massdalsketches/lcdelta.h"
 #include "../modified_massdalsketches/frequent.h"
 
-typedef struct FreqLC_type
+typedef struct DoubleLC_type
 {
   	char *a;
   	char *b;
@@ -17,10 +17,10 @@ typedef struct FreqLC_type
 	float phi;
 	float epsilon;
 	
-}FreqLC_type;
+}DoubleLC_type;
 
-FreqLC_type * FreqLC_Init(float phi, float epsilon, float delta);
-void FreqLC_Insert(FreqLC_type* lcfr, char * item);
-void FreqLC_Report(FreqLC_type* lcfr);
-void FreqLC_Destroy(FreqLC_type *lcfr);
-int FreqLC_Size(FreqLC_type *lcfr, int maxlength);
+DoubleLC_type * DoubleLC_Init(float phi, float epsilon, float delta);
+void DoubleLC_Insert(DoubleLC_type* lcfr, char * item);
+void DoubleLC_Report(DoubleLC_type* lcfr);
+void DoubleLC_Destroy(DoubleLC_type *lcfr);
+int DoubleLC_Size(DoubleLC_type *lcfr, int maxlength);
