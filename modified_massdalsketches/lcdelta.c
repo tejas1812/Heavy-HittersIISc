@@ -100,7 +100,9 @@ void lcdcountershell(unsigned long n, LCDCounter a[])
 
 int lcdcountermerge(LCDCounter *newcount, LCDCounter *left, LCDCounter *right,
 		      int l, int r, int maxholder, int epoch)
-{  // merge up two lists of counters. returns the size of the lists.
+{
+	//printf("lcdcountermerge\n");
+  // merge up two lists of counters. returns the size of the lists.
   int i,j,m;
 
   if (l+r>maxholder)
@@ -226,12 +228,10 @@ void LCD_Update(LCD_type * lc, char* val)
   lc->bucket[lc->buckets].count=1;
   lc->bucket[lc->buckets].delta=lc->epoch;
   lc->buckets++;
-
   //  printf("buckets = %d, window=%d\n", lc->buckets, lc->window);
 
   if (lc->buckets==lc->window)
     {
-
       lc->epoch++;
       qsort(lc->bucket,lc->window,sizeof(LCDCounter),ccmp);
       lcdcountershell(lc->window,lc->bucket);
@@ -266,37 +266,41 @@ int LCD_PointEst(LCD_type * lcd, char* item)
 
 
 char** LCD_Report(LCD_type * lc, float phi, int maxlength){
-
-	
   int i;
   LCDCounter *tmp;
   char** output = (char**)calloc((int)(1/(phi - lc->epsilon))+1, sizeof(char*));
-	if(lc->buckets==lc->window)
-{
-  qsort(lc->bucket,lc->window,sizeof(LCDCounter),ccmp);
-  lcdcountershell(lc->window,lc->bucket);
+	//if(lc->buckets==lc->window)
+//{
+	//qsort(lc->bucket,lc->window,sizeof(LCDCounter),ccmp);
+  qsort(lc->bucket,lc->buckets,sizeof(LCDCounter),ccmp);
+	//lcdcountershell(lc->window,lc->bucket);
+  lcdcountershell(lc->buckets,lc->bucket);
 
-  //printf("Now going to merge\n");
+  printf("Now going to merge\n");
+	//lc->holdersize=lcdcountermerge(lc->newcount,lc->bucket,lc->holder,
+		//		 lc->window,
+			//	 lc->holdersize,lc->maxholder,lc->epoch);
   lc->holdersize=lcdcountermerge(lc->newcount,lc->bucket,lc->holder,
-				 lc->window,
+				 lc->buckets,
 				 lc->holdersize,lc->maxholder,lc->epoch);
     //printf("Done with merge\n");
   tmp=lc->newcount;
   lc->newcount=lc->holder;
   lc->holder=tmp;
   lc->buckets=0;
-}
+//}
 
 
   //  printf("holdersize: %d\n", lc->maxholder);
   //  printf("threshold: %d\n", (int)((phi - lc->epsilon)*streamsize));
   int m=0;
-  for(i=0; i<lc->maxholder;i++)
+  for(i=0; i<lc->maxholder;i++){
     if ((lc->holder[i].count + lc->holder[i].delta) > (phi - lc->epsilon)*streamsize){
       printf("%s: %d\n", lc->holder[i].item, lc->holder[i].count + lc->holder[i].delta);
       output[m] = lc->holder[i].item;
       m++;
     }
+}
   return output;
 }
 
