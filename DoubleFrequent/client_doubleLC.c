@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "FreqLC.h"
+#include "DoubleLC.h"
 #include "../modified_massdalsketches/countmin.h"
 #include "../modified_massdalsketches/frequent.h"
 #include "../massdalsketches/prng.h"
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
 
 	stream_size=0;
-	FreqLC_type* lcfr=FreqLC_Init(0.01,0.0001,0.1);
+	DoubleLC_type* lcfr=DoubleLC_Init(0.01,0.0001,0.1);
 	struct timespec s,e;	
     char *line =allocate_array(sizeofdata+1);
 	int count;
@@ -29,10 +29,8 @@ int main(int argc, char **argv)
 	clock_gettime(CLOCK_REALTIME,&s);
 	while(count>0)
 	{
-		scanf("%s",line);
-		//printf("HELLO");				
-        FreqLC_Insert(lcfr,line);
-        //printf("HELLO");
+		scanf("%s",line);			
+        DoubleLC_Insert(lcfr,line);
 		free(line);
 		//change: line =allocate_array(sizeofdata+1);    
 	    char *line=allocate_array(sizeofdata+1);
@@ -41,11 +39,9 @@ int main(int argc, char **argv)
 	//change: added free(line)
 	free(line);
 	clock_gettime(CLOCK_REALTIME,&e);
-	printf("hhh");
 	printf("%f milliseconds\n",diff(&s,&e));
-	printf("hhh");
-	//printf("Size: %d\n",FreqLC_Size(lcfr));
-    FreqLC_Report(lcfr);
-	FreqLC_Destroy(lcfr);
+	//printf("Size: %d\n",DoubleLC_Size(lcfr));
+    DoubleLC_Report(lcfr);
+	DoubleLC_Destroy(lcfr);
 	return 0;
 }
