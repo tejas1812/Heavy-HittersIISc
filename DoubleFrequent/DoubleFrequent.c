@@ -19,19 +19,19 @@ DoubleFrequent_type * DoubleFrequent_Init(float phi, float epsilon, float delta)
 
 	dfr->a=allocate_array(sizeofdata);
 	dfr->b=allocate_array(sizeofdata); 
-	generate_rand_using_prng(dfr->a,prng);
-	generate_rand_using_prng(dfr->b,prng);
+	generate_rand_using_prng(dfr->a,prng,sizeofdata);
+	generate_rand_using_prng(dfr->b,prng,sizeofdata);
 	//change
 	prng_Destroy(prng);
 	//hash function : [n]->[4/(delta*epsilon^2)]
 	dfr->modval=(long long)4.0/(delta*epsilon*epsilon);
 
-	dfr->T1 = Freq_Init(phi/2.0, dfr->a, dfr->b);
-	dfr->T2 = Freq_Init(epsilon, dfr->a, dfr->b);
+	dfr->T1 = Freq_Init(phi/2.0,sizeofdata);
+	dfr->T2 = Freq_Init(epsilon,(int)log10(dfr->modval)+1);
 
 	dfr->phi=phi;
 	dfr->epsilon=epsilon;
-
+	printf("done with init\n");
 	return dfr;
 }
 

@@ -41,7 +41,9 @@ int main(int argc, char **argv)
 	//change: added free(line)
 	free(line);
 	clock_gettime(CLOCK_REALTIME,&e);
+	printf("hhh");
 	printf("%f milliseconds\n",diff(&s,&e));
+	printf("hhh");
 	//printf("Size: %d\n",FreqLC_Size(lcfr));
     FreqLC_Report(lcfr);
 	FreqLC_Destroy(lcfr);
