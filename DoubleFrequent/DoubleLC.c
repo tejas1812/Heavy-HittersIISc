@@ -107,7 +107,7 @@ void DoubleLC_Report(DoubleLC_type* lcfr)
 		int count_in_T2= LCD_PointEst(lcfr->T2,hasheditem);
 		//printf("count_in_T2 -%d\n",count_in_T2);
 		free(hasheditem);
-		if(count_in_T2>=(lcfr->phi)*stream_size)
+		if(count_in_T2>=(lcfr->phi- lcfr->epsilon)*stream_size)
 		{
 			printf("%s:%d\n", potentials[m], count);
 		}		
