@@ -4,7 +4,6 @@
 #include <math.h>
 #include "DoubleLC.h"
 #include "../modified_massdalsketches/countmin.h"
-#include "../modified_massdalsketches/frequent.h"
 #include "../massdalsketches/prng.h"
 #include "../Hashing/hashing.h"
 #include <time.h>
@@ -19,7 +18,7 @@ double diff(struct timespec* s,struct timespec* e)
 int main(int argc, char **argv) 
 {
 
-	stream_size=0;
+	
 	DoubleLC_type* lcfr=DoubleLC_Init(0.01,0.0001,0.1);
 	struct timespec s,e;	
     char *line =allocate_array(sizeofdata+1);
@@ -33,7 +32,7 @@ int main(int argc, char **argv)
         DoubleLC_Insert(lcfr,line);
 		free(line);
 		//change: line =allocate_array(sizeofdata+1);    
-	    char *line=allocate_array(sizeofdata+1);
+	    line=allocate_array(sizeofdata+1);
 		--count;
     }
 	//change: added free(line)

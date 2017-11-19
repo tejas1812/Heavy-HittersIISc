@@ -1,5 +1,4 @@
 #include "DoubleLC.h"
-#include "../modified_massdalsketches/frequent.h"
 #include "../Hashing/hashing.h"
 #include "../massdalsketches/prng.h"
 #include <stdio.h>
@@ -11,7 +10,7 @@ int stream_size=0;
 
 int DoubleLC_Size(DoubleLC_type *lcfr, int maxlength)
 {
-  return LCD_Size((lcfr->T1)+Freq_Size(lcfr->T2), maxlength);
+  return LCD_Size((lcfr->T1), maxlength)+LCD_Size(lcfr->T2,maxlength);
 }
 DoubleLC_type * DoubleLC_Init(float phi, float epsilon, float delta)
 {
@@ -36,7 +35,7 @@ DoubleLC_type * DoubleLC_Init(float phi, float epsilon, float delta)
 
 
 	lcfr->T1 = LCD_Init(phi/2.0);
-	lcfr->T2 = Freq_Init(epsilon,(int)log10(lcfr->modval)+1);
+	lcfr->T2 = LCD_Init(epsilon);
 
 	lcfr->phi=phi;
 	lcfr->epsilon=epsilon;
@@ -44,7 +43,8 @@ DoubleLC_type * DoubleLC_Init(float phi, float epsilon, float delta)
 	
 	return lcfr;
 }
-int freq_get_count(freq_type *fr,char *item)
+/*
+int LCD_get_count(LCD_type *fr,char *item)
 {
 	GROUP *g;
 	ITEMLIST *i,*first;
@@ -78,7 +78,7 @@ int freq_get_count(freq_type *fr,char *item)
 		g=g->nextg;
     }
 	return -1;
-}
+}*/
 void DoubleLC_Insert(DoubleLC_type* lcfr, char * item)
 {
   stream_size++;
@@ -86,7 +86,7 @@ void DoubleLC_Insert(DoubleLC_type* lcfr, char * item)
 	LCD_Update(lcfr->T1, item);
 	//printf("after\n");
 	char * hasheditem=get_string(hashval(item, lcfr->a, lcfr->b, lcfr->modval));
-	Freq_Update(lcfr->T2, hasheditem,lcfr->modval);
+	LCD_Update(lcfr->T2, hasheditem);
 	//printf("after !!cm\n");
 }
 void DoubleLC_Report(DoubleLC_type* lcfr)
@@ -104,7 +104,7 @@ void DoubleLC_Report(DoubleLC_type* lcfr)
     {
     	char * hasheditem=get_string(hashval(potentials[m],lcfr->a, lcfr->b, lcfr->modval));
     	//printf("");
-		int count_in_T2= freq_get_count(lcfr->T2,hasheditem);
+		int count_in_T2= LCD_PointEst(lcfr->T2,hasheditem);
 		//printf("count_in_T2 -%d\n",count_in_T2);
 		free(hasheditem);
 		if(count_in_T2>=(lcfr->phi)*stream_size)
@@ -125,7 +125,7 @@ void DoubleLC_Destroy(DoubleLC_type *lcfr)
   //	free(sfr->a);
   //	free(sfr->b);
 	//LCD_Destroy(lcfr->T1);
-	//Freq_Destroy(lcfr->T2);
+	//LCD_Destroy(lcfr->T2);
 	
 	//free(lcfr);
 }

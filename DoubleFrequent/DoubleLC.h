@@ -1,5 +1,4 @@
 #include "../modified_massdalsketches/lcdelta.h"
-#include "../modified_massdalsketches/frequent.h"
 
 typedef struct DoubleLC_type
 {
@@ -12,7 +11,7 @@ typedef struct DoubleLC_type
 	LCD_type* T1;
 
 	// uses 1/epsilon counters
-	freq_type* T2;
+	LCD_type* T2;
 
 	float phi;
 	float epsilon;
