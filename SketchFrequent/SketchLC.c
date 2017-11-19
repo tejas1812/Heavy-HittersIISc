@@ -56,12 +56,11 @@ void SketchLC_Report(SketchLC_type* sfr)
 {
   char** potentials = LCD_Report(sfr->T1, sfr->phi, sizeofdata);
   int m=0, count;
-  //while(strcmp(potentials[m],emptystring)!=0){
-    while(potentials[m]!=0){
+	while(potentials[m]!=0){    
 	count = LCD_PointEst(sfr->T1, potentials[m]);
     if(count>(sfr->phi)*stream_size/2 && CM_PointEst(sfr->T2, potentials[m])>(sfr->phi)*stream_size)
       printf("%s:%d\n", potentials[m], count);
-	    ++m;
+		++m;
   }
   
 }
