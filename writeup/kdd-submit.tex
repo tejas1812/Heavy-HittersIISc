@@ -1,6 +1,6 @@
 %
 % The first command in your LaTeX source must be the \documentclass command.
-\documentclass[sigconf,review=true,anonymous=true]{acmart}
+\documentclass[sigconf,review=true,anonymous=true,screen]{acmart}
 
 \usepackage{algorithmic}
 \usepackage[ruled]{algorithm2e}
@@ -78,7 +78,7 @@
 \begin{abstract}
 In a stream of $m$ items belonging to $\{1, \dots, n\}$, the {\em $(\eps, \phi)$-Heavy Hitters} problem is to output a set $S$ of items containing all items of frequency $\geq \phi m$ and no item of frequency $< (\phi-\eps)m$. It is one of the most heavily-studied problems in data streams, with a wide variety of applications. 
 
-In this work, we propose new randomized counter-based algorithms for the heavy-hitters problem. We show that not only do they have nearly optimal space complexity in terms of worst-case analysis, they can also be designed to have a strong error bound in terms of the frequency tail and that they perform favorably on realistic data sets.
+In this work, we propose new randomized counter-based algorithms for the heavy-hitters problem. We show that not only do they have nearly optimal space complexity with respect to $\eps, \phi,$ and $n$, they also exhibit strong error bounds in terms of the frequency tail of the input and perform favorably on realistic data sets.
 \end{abstract}
 
 %
@@ -130,31 +130,63 @@ In this work, we propose new randomized counter-based algorithms for the heavy-h
 \maketitle
 
 \section{Introduction}
-The {\em data streaming} model is an important tool for analyzing algorithms on massive data sets. Streaming algorithms
-take a long stream of items as input and produce a compact summary of the data as output. This summary can be used to answer queries about the properties of the input data stream. The algorithms are often (necessarily) both randomized and approximate, and we usually want them to take a single pass over the data.
+\subsection{Background}
+The {\em data streaming} model is an important tool for analyzing algorithms on massive data sets \cite{Muthu05}. Streaming algorithms
+take a long stream of items as input and produce a compact summary of the data as output. This summary can be used to answer queries about the properties of the input data stream. The algorithms are often constrained to take a single pass over the data.
 
-A concrete application is the problem of monitoring IP network traffic. Here, data stream management systems monitor IP packets sent on communication links and perform detailed statistical analyses. These analyses are crucial for fault diagnoses and for verifying network performance and security. Examples of such systems are Gigascope at AT\&T \cite{Giga} and CMON at Sprint \cite{CMON}.The main challenge in these systems is to quickly and accurately perform the needed analyses in the face of a very high rate of updates.
+A concrete application is the problem of monitoring IP network traffic. Here, data stream management systems monitor IP packets sent on communication links and perform detailed statistical analyses. These analyses are crucial for fault diagnoses and for verifying network performance and security. Examples of such systems are Gigascope at AT\&T \cite{Giga} and CMON at Sprint \cite{CMON}. The main challenge in these systems is to quickly and accurately perform the needed analyses in the face of a very high rate of updates.
 
 
-In this work, we consider the {\em heavy-hitters} problem. Informally, the goal is to find the frequent elements in the stream; the same problem is also studied under the names of top-k, popular items, frequent items, elephants, or iceberg queries. It is very heavily studied and commonly used, e.g. in network analyses to find addresses that account for a large fraction of a network link utilization in a given time window. It is also often solved as a subroutine within more advanced data stream computations, e.g. approximating the entropy of a stream.
+In this work, we consider the {\em heavy-hitters} problem. Informally, the goal is to find the frequent elements in the stream; the same problem is also studied under the names of top-k, popular items, frequent items, elephants, or iceberg queries. It is very heavily studied and commonly used, e.g. in network analyses to find addresses that account for a large fraction of a network link utilization in a given time window. It is also often solved as a subroutine within more advanced data stream computations, e.g. approximating the entropy of a stream. Cormode and Hadjieleftheriou in \cite{FrequentSurvey} give an excellent survey of the work on this problem in a unified framework. 
 
 We formulate the heavy-hitters problem rigorously as follows:
-\begin{definition}
- ($(\varepsilon, \varphi)$-\textbf {Heavy Hitters Problem})
-    In the $(\varepsilon, \varphi)$-Heavy Hitters Problem, we are given
+\begin{definition}\label{def:hh}
+    In the {\em $(\varepsilon, \varphi)$-Heavy Hitters Problem}, we are given
     parameters $0< \varepsilon <\varphi$ $\leqslant$ 1 and a stream $a_{1},....,a_{m}$
     of items $a_{j}$ in $\left\{1,2,.....n\right\}$. Let $f_{i}$ denote the number of
-    occurrences of item i, i.e., its frequency. An algorithm for the problem should make one pass over the stream and at the end
-    of the stream output a set $S \subseteq \left\{1,2,.....n\right\}$ which contains any $i$ such that $f_I \geq \phi m$ and does not contain any $i$ such that $f_i < (\phi - \eps)m$.
- Furthermore, for each item i $\in S$, the algorithm should output an estimate $\tilde{f_{i}}$ of the frequency $f_{i}$ which satisfies $|f_{i} -\tilde{f_{i}}|$ $ \leqslant \varepsilon m$. The algorithm may be randomized.
+    occurrences of item $i$, i.e., its frequency\footnote{We assume throughout this paper that there are only insertions (no deletion) in the stream and that each insertion of an item increases its frequency by $1$. }. An algorithm for the problem should make one pass over the stream and at the end
+    of the stream output a set $S \subseteq \left\{1,2,.....n\right\}$ which contains any $i$ such that $f_i \geq \phi m$ and does not contain any $i$ such that $f_i < (\phi - \eps)m$.
+ 
+ Furthermore, for each item $i\in S$, the algorithm should output an estimate $\tilde{f_{i}}$ of the frequency $f_{i}$ which satisfies $|f_{i} -\tilde{f_{i}}|$ $ \leqslant \varepsilon m$. 
+\end{definition}
+    A large number of algorithms have been proposed for finding the heavy hitters and their variants. Following \cite{FrequentSurvey}, they can be broadly classified into {\em Counter-based} algorithms, {\em Quantile} Algorithms,  and {\em Sketch} algorithms. 
+
+    One of the first algorithms for the problem, as well as perhaps the most widely used, is the counter-based \textsc{Frequent} algorithm  due to Misra and Gries \cite{MG82} (independently re-discovered 20 years later with some refinements to the implementation by Karp et al. \cite{KSP03} and Demaine et al. \cite{DLM02}). There are several variants of the algorithm, notably \textsc{LossyCounting} \cite{MM02} and \textsc{SpaceSaving} \cite{MAA05}, that sometimes perform better in terms of space usage or update time than the original version. All these algorithms use $O(\eps^{-1}(\log n + \log m))$ bits of space; note the bound does {\em not} depend on $\varphi$. Sketching algorithms, such as the CountSketch \cite{CCF02} or the Count-Min Sketch \cite{CM05}, require more storage (but they can handle more general streams with both insertions and deletions that we do not study here).
+    
+Recently, in \cite{BDW16}, Bhattacharyya et al.~introduced two new algorithms for the $(\eps, \phi)$-heavy hitters problem that improve on the space usage of \textsc{Frequent}, particularly when $\phi \gg \eps$. One of their algorithms uses $O(\eps^{-1}\log\eps^{-1}+\phi^{-1} \log n + \log \log m)$ bits of storage, which is optimal upto constant factors. Moreover, the algorithms take a constant amount of time per update. These algorithms are fundamentally counter-based and use the Misra-Gries algorithm as a subroutine, but they also use random sampling and hashing in crucial ways.
+
+\subsection{Our Work}
+Given the strong theoretical guarantees of the algorithms proposed in \cite{BDW16}, it is natural to wonder how well they fare in practice. 
+
+Berinde et al.~\cite{BCIS} observe that one of the main reasons for the real-world success of \textsc{Frequent} is that it displays ``better-than-advertised'' performance on streams which have a {\em skewed} frequency distribution. In particular, they showed that the error made by \textsc{Frequent} in frequency estimation satisfies a ``tail bound'', so that it is very small when heavy hitters constitute most of the stream.
+
+The starting point of this work is the observation that the algorithms proposed in \cite{BDW16} do {\em not} exhibit a tail bound, so that the estimation error can be large even when the frequency distribution is very skewed. We design new randomized algorithms inspired by \cite{BDW16} that improve \textsc{Frequent} in terms of bits of storage while still achieving a tail bound. We show two different algorithms with this feature. Although they are novel to the best of our knowledge, they are both quite simple to implement and analyze. The first algorithm combines a \textsc{Frequent} data structure with a Count-Min sketch \cite{CM05}. The second algorithm maintains two \textsc{Frequent} data structures, one with a smaller number of counters containing items from the original universe and another with a larger number of counters recording hashes of the original item id's.
+Armed with the tail guarantee and following the analysis of Berinde et al.~\cite{BCIS}, we then show that our proposed algorithms enjoy several other appealing properties, such as guarantees for skewed Zipfian streams, for the sparse recovery problem and for merging multiple streams.
+
+We experimentally evaluate $\dots$.
+
+
+
+
+    \section{Preliminaries}
+    \subsection{General}
+For a stream consisting of $m$ insertions from the universe $[n] \coloneqq \{1,\dots, n\}$, we let the $n$-dimensional vector $f = (f_1, \dots, f_n)$
+denote the frequencies of the $n$ items. So, $\sum_{i=1}^n f_i = m$. Without loss of generality, we will assume that $f_1 \geq f_2 \geq \cdots \geq f_n$. 
+
+For any integer $k \geq 0$, the {\em residual $k$-tail} of the stream is defined as\footnote{The 1 in the subscript refers to the fact that this is the 1st moment of the residual stream.}:
+$$F_1^{\text{res}(k)} = \sum_{i=k+1}^n f_i.$$
+That is, the residual $k$-tail is the sum of the frequencies except the $k$ largest ones. 
+
+Recall from Definition \ref{def:hh} that an algorithm for the $(\eps, \varphi)$-heavy hitters problem is supposed to output estimates $\tilde{f}_i$ for each $i$ in the output set such that:
+$$|\tilde{f}_i - f_i| \leq \eps \cdot m = \eps\cdot F_1^{\text{res}(0)}.$$
+\begin{definition}[Tail Bound]\label{def:tailbd}
+An algorithm for the $(\eps,\varphi)$-heavy hitters problem is said to satisfy the {\em $K$-tail bound} if for every $0\leq k\leq K$:
+$$|\tilde{f}_i - f_i| \leq \eps \cdot F_1^{\text{res}(k)}$$
+for all $i$ in the output set of the algorithm.
 \end{definition}
 
-    \section{Background}
-\subsection{The \textsc{Frequent} algorithm}
-    A large number of algorithms have been proposed for finding the heavy hitters and their variants. All the algorithms for finding out the heavy hitters are broadly classified into {\em Counter-based} algorithms, {\em Quantile} Algorithms,  and {\em Sketch} algorithms. 
 
-    One of the first algorithms for the problem, as well as perhaps the most widely used, is the counter-based \textsc{Frequent} algorithm  due to Misra and Gries \cite{MG82} (independently re-discovered 20 years later with some refinements to the implementation by Karp et al. \cite{KSP03} and Demaine et al. \cite{DLM02}). It is shown below as Algorithm \ref{fig:freq}.
-    
+\subsection{The \textsc{Frequent} algorithm}   
     \begin{algorithm}
     	\caption{\textsc{Frequent}}
 	\label{fig:freq}
@@ -190,10 +222,14 @@ Empty array $c$ of length\footnote{In fact, $c$ will only contain at most $t$ no
     \end{algorithm}
 
     \vspace*{.5cm}
- \textsc{Frequent} maintains $t$ (item, counter) pairs. Its reported frequencies are accurate to within $m/(t+1)$ where $m$ is the length of the stream. In particular, it reports all items with frequency at least $m/(t+1)$. 
+\textsc{Frequent}, shown in Algorithm \ref{fig:freq}, maintains $t$ (item, counter) pairs. Its reported frequencies are accurate to within $m/(t+1)$ where $m$ is the length of the stream. In particular, it reports all items with frequency at least $m/(t+1)$. 
 
-In the algorithm, each new item is compared with stored items and if the new item is among the stored items, then the count value of stored items is incremented. Else, if it is not the one already present and there is some counter whose value is zero, then this item in the table is stored and the counter value is set to one. Else if all counter value is non-zero, then the counter value is decremented by 1 for each item. A simple grouping argument can be used to verify the correctness of the algorithm. More precisely, as we see below, the \textsc{Frequent} algorithm (Algorithm 1) with $t = \lceil 1/\eps \rceil$ counters solves the $(\eps,\phi)$-Heavy hitters problem using $O(\varepsilon^{-1} (\log n + \log m))$ bits of space. Note that there is no dependence on $\phi$.
-
+\ignore{In the algorithm, each new item is compared with stored items and if the new item is among the stored items, then the count value of stored items is incremented. Else, if it is not the one already present and there is some counter whose value is zero, then this item in the table is stored and the counter value is set to one. Else if all counter value is non-zero, then the counter value is decremented by 1 for each item. }
+A simple grouping argument can be used to verify the correctness of the algorithm. With $t = \lceil 1/\eps \rceil$ counters, \textsc{Frequent} solves the $(\eps,\phi)$-Heavy hitters problem using $O(\varepsilon^{-1} (\log n + \log m))$ bits of space. Berinde et al.~\cite{BCIS} showed a stronger tail bound:
+\begin{theorem}(\cite{BCIS})
+For any $t > \frac1\eps$, the \textsc{Frequent} algorithm with $t$ counters satisfies the $\left(t-\frac1\eps\right)$-tail bound and uses $O(t(\log n + \log m))$ bits of storage.
+\end{theorem}
+\ignore{
 We sketch an analysis of the error bound present in Berinde et al. \cite{BCIS}. 
 The \textsc{Frequent} algorithm can be interpreted in the following way:
     each element in the stream results in incrementing one counter, and the insertion of some $d$ elements cause $t+1$ counters to be decremented (including the implicit decrement of the item being inserted). The sum
@@ -217,11 +253,12 @@ Berinde et al.~\cite{BCIS} call a bound of the form (\ref{eqn:freq_tail}) a {\em
 Streams in real-life often display a characteristically skewed frequency distribution, with the heavy hitters
 constituting a large fraction of the stream. A residual tail guarantee is in this case asymptotically better than a uniform guarantee.
 As we describe later, Berinde et al.~also show that a $k$-tail guarantee implies bounds for {sparse recovery}, stronger error bounds for streams with Zipfian frequency distribution and for mergeability of multiple summaries. These properties make the \textsc{Frequent} algorithm even more useful in practice than what would be suggested just by the bound (\ref{eqn:std_freq}).
-
+}
 \subsection{The work of \cite{BDW16}}\label{sec:bdw}
 In the recent work \cite{BDW16}, Bhattacharyya, Dey and Woodruff introduce a couple of randomized counter-based algorithms that improve upon \textsc{Frequent} in terms of the number of bits needed for storage. Their first algorithm solves the $(\eps,\phi)$-Heavy hitters problem with space $O(1/\eps \log 1/\eps + 1/\phi \log n + \log \log m)$ bits, while their second algorithm uses $O(1/\eps \log 1/\phi + 1/\phi \log n + \log \log m)$ bits. When $\eps \ll \phi$, the space requirement for these algorithms is asymptotically smaller than the worst-case space requirement for \textsc{Frequent}. In fact, \cite{BDW16} show that the second algorithm achieves the optimal (up to constant factors) number of bits for solving the $(\eps, \phi)$-Heavy hitters problem.
 
-The first algorithm of \cite{BDW16}, which we dub \textsc{CompressedFrequent}, is shown below as Algorithm \ref{fig:alg1}.
+The first algorithm of \cite{BDW16}, which we dub \textsc{CompressedFrequent}, is shown below as Algorithm \ref{fig:alg1}. \textsc{CompressedFrequent} runs Misra and Gries' \textsc{Frequent} algorithm on a sampled stream of length $O(1/\eps^2)$ on a hashed universe of size $O(1/\eps^4)$. By the choice of parameters, there are no hash collisions among the elements sampled from the stream with high probability. Also, by standard concentration results, the relative frequency of any element in the original stream and the sampled stream differ by at most $\eps/2$. Some additional bookkeeping needs to be done to ensure that we have the original (unhashed) id's of the heavy hitters, but otherwise, the analysis is complete.
+
 
     \begin{algorithm}
     	\caption{\textsc{CompressedFrequent}, \cite{BDW16}}
@@ -267,19 +304,20 @@ Insert $x$ in $\mathcal{T}_{2}$\;
 }
     \end{algorithm}
     
-\textsc{CompressedFrequent} runs Misra and Gries' \textsc{Frequent} algorithm on a sampled stream of length $O(1/\eps^2)$ on a hashed universe of size $O(1/\eps^4)$. By the choice of parameters, there are no hash collisions among the elements sampled from the stream with high probability. Also, by standard concentration results, the relative frequency of any element in the original stream and the sampled stream differ by at most $\eps/2$. Some additional bookkeeping needs to be done to ensure that we have the original (unhashed) id's of the heavy hitters, but otherwise, the analysis is complete.
 
 The second algorithm of \cite{BDW16} is more intricate. It also operates on $O(1/\eps^2)$ samples from the original stream and then maintains a compressed histogram for hashes of the original items. It is somewhat reminiscent of the Count-Min sketch algorithm of Cormode and Muthukrishnan \cite{CM05}, but it also subsamples items from the sample with subsampling rate tuned to a mutliplicative approximation of the frequency. We omit a more detailed description of this algorithm because we do not study it in this work.
 
+\ignore{
 	\section{Our Contribution: Tail guarantees for randomized counter-based solutions}
 
-We begin by observing that the randomized counter-based algorithms from \cite{BDW16}, described above in Section \ref{sec:bdw}, cannot admit a tail guarantee, like the bound in (\ref{eqn:freq_tail}) shown for \textsc{Frequent}. This is because even if the stream only has two types of elements, so that $F_1^{\text{res}(2)} = 0$, there will still be some error in the frequency approximation from the sampling step. So, random sampling cannot be used as a technique if we want to retain the tail guarantee of \textsc{Frequent}.
+We begin by observing that the randomized counter-based algorithms from \cite{BDW16}, described above in Section \ref{sec:bdw}, cannot admit a tail guarantee, like the bound in (\ref{eqn:freq_tail}) shown for \textsc{Frequent}. This is because even if the stream only has two types of elements, so that $F_1^{\text{res}(2)} = 0$, there will still be some error in the frequency approximation from the sampling step. So, random sampling cannot be used as a technique if we want to retain the tail guarantee of \textsc{Frequent}. 
 
 In this work, we show that we can improve \textsc{Frequent} in terms of bits of storage while still achieving the $k$-tail guarantee. We show two different algorithms with this feature. Although they are novel to the best of our knowledge, they are both quite simple to implement and analyze. The first algorithm combines a \textsc{Frequent} data structure with a Count-Min sketch \cite{CM05}. The second algorithm maintains two \textsc{Frequent} data structures, one with a smaller number of counters containing items from the original universe and another with a larger number of counters recording hashes of the original item id's.
 
 Armed with the tail guarantee and following the analysis of Berinde et al.~\cite{BCIS}, we can then show that our proposed algorithms enjoy several other appealing properties, such as guarantees for skewed Zipfian streams, for the sparse recovery problem and for merging multiple streams.
-
+}
 \section{New Algorithms}
+We start with the observation that the algorithms proposed in \cite{BDW16} cannot satisfy a non-trivial tail guarantee. Consider the \textsc{CompressedFrequent} algorithm shown in Figure \ref{fig:alg1}, and suppose the input stream only consists of two items with each inserted $\Omega(m)$ times. Although $F_1^{\text{res}(2)}=0$, the frequency estimates output by the algorithm will still have nonzero error because due to random sampling, the relative frequency of the two items in the sampled stream will (with high probability) differ from that in the original stream. The same argument holds for the second algorithm of \cite{BDW16}.
 
 \subsection{\textsc{SketchFrequent}}
  	\begin{algorithm}
@@ -304,18 +342,22 @@ Insert $x$ into $\mathcal{T}$\;
 {Increment $\mathcal{C}[i][h_i(x)]$\;}
 }
 \Fn{Report()}{
-\ForEach{$x \in \mathcal{T}_{1}$}{
+\ForEach{$x \in \mathcal{T}$}{
 $\hat{f}_x \leftarrow \min_{i \in [\ell]} \mathcal{C}[i][h_i(x)]$\;
-\If{$\hat{f}(x) \geq \phi m$}{
+\If{$\hat{f}_x \geq \phi m$}{
 Output $(x,\hat{f}_x)$\;
 }}}
 	\end{algorithm}
 Our first algorithm, shown above, runs the Count-Min sketch on the output of a \textsc{Frequent} counter solving the $(\phi,\phi/2)$-Heavy hitters problem.
 
 \begin{theorem}
-\textsc{SketchFrequent} solves the $(\phi, \eps)$-Heavy hitters problem. In particular, for any $0 \leq k \leq \sqrt{\delta w/\ell}$, with probability at least $1-\delta$, for any $(x, \hat{f}_x)$ reported by the algorithm,
+For any $w \geq \frac2\eps$ and $\delta \in [0,1]$,  \textsc{SketchFrequent} satisfies the $\sqrt{\delta w/(2 \log \delta^{-1} \varphi^{-1})}$-tail bound with probability $1-\delta$ 
+and uses 
+$O(\varphi^{-1} \log n + w \log \phi^{-1} \log m)$ bits of storage.
+\ignore{
+solves the $(\phi, \eps)$-Heavy hitters problem. In particular, for any $0 \leq k \leq \sqrt{\delta w/\ell}$, with probability at least $1-\delta$, for any $(x, \hat{f}_x)$ reported by the algorithm,
 $$0 \leq \hat{f}_x - f_x \leq \eps F_1^{\text{res}(k)}.$$
-The algorithm uses $O(\phi^{-1} \log  n + \eps^{-1} \log \phi^{-1} \log m)$ bits of storage.
+The algorithm uses $O(\phi^{-1} \log  n + \eps^{-1} \log \phi^{-1} \log m)$ bits of storage.}
 \end{theorem}
 \begin{proof}
 Correctness and the space bound follows from the guarantees for the Count-Min sketch and taking the union bound on the $2/\phi$ elements in $\mathcal{T}$ (see, for example, \cite{ChekuriNotes}). The tail bound arises from the fact that on the top $\sqrt{\delta w/\ell}$ elements of the stream, $h_1, \dots, h_\ell$ do not collide with probability at least $1-\delta$ (similar to Lemma \ref{lem:nocoll} below). 
@@ -360,9 +402,12 @@ Our second algorithm runs two \textsc{Frequent} algorithms in parallel. The firs
 	Proposed algorithm is simple algorithm with space complexity of $O(1/\varphi\log n + 1/\varepsilon\log {1/\varepsilon} + 1/\varepsilon \log s)$. In this proposed algorithm, upon picking item $x$ from stream S, If $x$ is already present in $\mathcal{T}_{1}$ then increment its counter value by 1.If $x$ is not present in $\mathcal{T}_{1}$ and $\mathcal{T}_{1}$ is not Full then put $x$ into $\mathcal{T}_{1}$ and make its counter value 1. If $x$ is not present in $\mathcal{T}_{1}$ and $\mathcal{T}_{1}$ is Full then decrement value for each counter value in $\mathcal{T}_{1}$ and if any counter value of some element say $y$ is zero then replace $y$ with $x$ and make $x$ counter value to be 1.
 }
 \begin{theorem}
-\textsc{DoubleFrequent} solves the $(\phi, 2\eps)$-Heavy hitters problem. In particular, for any $0\leq k \leq 1/\eps$, with probability at least $1-\delta$, for any $(x,\hat{f}_x)$ reported by the algorithm,
+For any $t > \frac1\eps$ and $\delta \in [0,1]$, \textsc{DoubleFrequent} satisfies the $\left(t-\frac1\eps\right)$-tail bound with probability $1-\delta$ and uses $O(\varphi^{-1} \log n + t \log m + t \log (\delta\eps)^{-1})$ bits of storage.
+
+\ignore{
+solves the $(\phi, 2\eps)$-Heavy hitters problem. In particular, for any $0\leq k \leq 1/\eps$, with probability at least $1-\delta$, for any $(x,\hat{f}_x)$ reported by the algorithm,
 $$|f_x - \hat{f}_x| \leq \frac{F_1^{\text{res}(k)}}{1/\eps - k}$$
-The algorithm uses $O(\phi^{-1} \log n + \eps^{-1} \log m)$ bits of storage.
+The algorithm uses $O(\phi^{-1} \log n + \eps^{-1} \log m)$ bits of storage.}
 \end{theorem}
 \begin{proof}
 First, observe that there are likely going to be no hash collisions among the top $1/\eps$ elements in the stream.	
@@ -481,60 +526,36 @@ arrivals in the stream is arbitrary.
 $\alpha\geq 1$, the error in the frequency for any item reported by the \textsc{DoubleFrequent} algorithm with parameters $\delta, \eps,$ and $\varphi$ is at most 
 $O(\eps^\alpha m)$ with probability at least $1 -\delta$.
 \end{theorem}
-\ignore{
-Proof. Corollary of Theorem 8 in [6].
-5
-4.3.2 k-sparse recovery
-In the k-sparse recovery problem, given a frequency
-vector f, we want to find a vector f
-0
-such that f
-0
-is
-k-sparse (has only k nonzero entries) and the p-norm
-error kf − f
-0kp = (P
-i
-|fi − f
-0
-i
-|
-p
-)
-1/p is minimized.
-The next theorem shows that if k ≤ 1/ϕ, taking the
-top k of the output of DoubleFrequent is a good
+\begin{proof}
+Corollary of Theorem 8 in \cite{BCIS}.
+\end{proof}
+\subsubsection{$k$-sparse recovery}
+In the $k$-sparse recovery problem, given a frequency
+vector $f$, we want to find a vector $f'$
+such that $f'$ is
+$k$-sparse (has only $k$ nonzero entries) and the $p$-norm
+error $\|f - f'\|_p = (\sum_i |f_i - f'_i|^p)^{1/p}$ is minimized.
+The next theorem shows that if $k ≤ 1/\varphi$, taking the
+top $k$ of the output of \textsc{DoubleFrequent} is a good
 approximation.
-Theorem 4. If k ≤ 1/ϕ and f
-0
-is the k-sparse vector obtained by taking the top k elements of the output
-of DoubleFrequent (run with parameters δ, ε and
-ϕ), with probability at least 1 − δ, for any p ≥ 1:
-kf − f
-0
-kp ≤ (F
-res(k)
-p
-)
-1/p + O
 
-εFres(k)
-1
-k
-2−1/p !
-where (F
-res(k)
-p )
-1/p is the smallest Lp error of any ksparse recovery of f.
-Proof. Corollary of Theorem 5 in [6].
+\begin{theorem}If $k \leq \frac1\varphi$ and $f'$ is the $k$-sparse vector obtained by taking the top $k$ elements of the output
+of \textsc{DoubleFrequent} (run with parameters $\delta, \eps, $ and $\varphi$), with probability at least $1 - \delta$, for any $p \geq 1$:
+$$\|f - f'\|_p \leq (F_p^{\text{res}(k)})^{1/p} + O\left(\frac{\eps F_1^{\text{res}(k)}}{k^{2-1/p}}\right)$$
+where $(F^{\text{res}(k)}_p)^{1/p}$ is the smallest $L_p$ error of any $k$-sparse recovery of $f$.
+\end{theorem}
+\begin{proof} Corollary of Theorem 5 in \cite{BCIS}.
+\end{proof}
 The following result also gives a guarantee if we
-would like to output exactly the top k elements.
-Theorem 5. Given a Zipfian stream with parameter
-α > 1, if k ≤ O((α/ϕα)
-1/(α+1)), then with probability at least 1−δ, DoubleFrequent can retrieve the
-top-k elements of the stream in correct order.
-Proof. Corollary of Theorem 9 of [6].
-}
+would like to output exactly the top $k$ elements.
+\begin{theorem}
+Given a Zipfian stream with parameter $\alpha > 1$, if $k = O((\alpha/\varphi^\alpha)^{1/(\alpha+1)})$, then with probability at least 
+$1-\delta$, \textsc{DoubleFrequent} can retrieve the
+top-$k$ elements of the stream in correct order.
+\end{theorem}
+\begin{proof}
+Corollary of Theorem 9 of \cite{BCIS}.
+\end{proof}
 
 %
 % The next two lines define the bibliography style to be used, and the bibliography file.
