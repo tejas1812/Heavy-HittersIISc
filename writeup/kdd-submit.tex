@@ -28,9 +28,9 @@
 \setcopyright{acmlicensed}
 \acmConference[KDD '19]{KDD '19: SIGKDD Conference on Knowledge Discovery and Data Mining}{August 04--06, 2019}{Anchorage, AL}
 \acmBooktitle{KDD '19: SIGKDD Conference on Knowledge Discovery and Data Mining, Aug 04--06, 2019, Anchorage, AL}
-\acmPrice{15.00}
-\acmDOI{10.1145/1122445.1122456}
-\acmISBN{978-1-4503-9999-9/18/06}
+%\acmPrice{15.00}
+%\acmDOI{10.1145/1122445.1122456}
+%\acmISBN{978-1-4503-9999-9/18/06}
 
 %
 % These commands are for a JOURNAL article.
@@ -87,34 +87,27 @@ In this work, we propose new randomized counter-based algorithms for the heavy-h
 %
 \begin{CCSXML}
 <ccs2012>
- <concept>
-  <concept_id>10010520.10010553.10010562</concept_id>
-  <concept_desc>Computer systems organization~Embedded systems</concept_desc>
-  <concept_significance>500</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010575.10010755</concept_id>
-  <concept_desc>Computer systems organization~Redundancy</concept_desc>
-  <concept_significance>300</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010553.10010554</concept_id>
-  <concept_desc>Computer systems organization~Robotics</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
- <concept>
-  <concept_id>10003033.10003083.10003095</concept_id>
-  <concept_desc>Networks~Network reliability</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
+<concept>
+<concept_id>10002951.10003227.10003351</concept_id>
+<concept_desc>Information systems~Data mining</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10003752.10003809</concept_id>
+<concept_desc>Theory of computation~Design and analysis of algorithms</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+<concept>
+<concept_id>10003033.10003099.10003105</concept_id>
+<concept_desc>Networks~Network monitoring</concept_desc>
+<concept_significance>100</concept_significance>
+</concept>
 </ccs2012>
 \end{CCSXML}
 
-\ccsdesc[500]{Computer systems organization~Embedded systems}
-\ccsdesc[300]{Computer systems organization~Redundancy}
-\ccsdesc{Computer systems organization~Robotics}
-\ccsdesc[100]{Networks~Network reliability}
-
+\ccsdesc[500]{Information systems~Data mining}
+\ccsdesc[300]{Theory of computation~Design and analysis of algorithms}
+\ccsdesc[100]{Networks~Network monitoring}
 %
 % Keywords. The author(s) should pick words that accurately describe the work being
 % presented. Separate the keywords with commas.
@@ -151,9 +144,9 @@ We formulate the heavy-hitters problem rigorously as follows:
 \end{definition}
     A large number of algorithms have been proposed for finding the heavy hitters and their variants. Following \cite{FrequentSurvey}, they can be broadly classified into {\em Counter-based} algorithms, {\em Quantile} Algorithms,  and {\em Sketch} algorithms. 
 
-    One of the first algorithms for the problem, as well as perhaps the most widely used, is the counter-based \textsc{Frequent} algorithm  due to Misra and Gries \cite{MG82} (independently re-discovered 20 years later with some refinements to the implementation by Karp et al. \cite{KSP03} and Demaine et al. \cite{DLM02}). There are several variants of the algorithm, notably \textsc{LossyCounting} \cite{MM02} and \textsc{SpaceSaving} \cite{MAA05}, that sometimes perform better in terms of space usage or update time than the original version. All these algorithms use $O(\eps^{-1}(\log n + \log m))$ bits of space; note the bound does {\em not} depend on $\varphi$. Sketching algorithms, such as the CountSketch \cite{CCF02} or the Count-Min Sketch \cite{CM05}, require more storage (but they can handle more general streams with both insertions and deletions that we do not study here).
+    One of the first algorithms for the problem, as well as perhaps the most widely used, is the deterministic counter-based \textsc{Frequent} algorithm  due to Misra and Gries \cite{MG82} (independently re-discovered 20 years later with some refinements to the implementation by Karp et al. \cite{KSP03} and Demaine et al. \cite{DLM02}). There are several variants of the algorithm, notably \textsc{LossyCounting} \cite{MM02} and \textsc{SpaceSaving} \cite{MAA05}, that sometimes perform better in terms of space usage or update time than the original version. All these algorithms use $O(\eps^{-1}(\log n + \log m))$ bits of space; note the bound does {\em not} depend on $\varphi$. Sketching algorithms, such as the CountSketch \cite{CCF02} or the Count-Min Sketch \cite{CM05}, require more storage (but they can handle more general streams with both insertions and deletions that we do not study here).
     
-Recently, in \cite{BDW16}, Bhattacharyya et al.~introduced two new algorithms for the $(\eps, \phi)$-heavy hitters problem that improve on the space usage of \textsc{Frequent}, particularly when $\phi \gg \eps$. One of their algorithms uses $O(\eps^{-1}\log\eps^{-1}+\phi^{-1} \log n + \log \log m)$ bits of storage, which is optimal upto constant factors. Moreover, the algorithms take a constant amount of time per update. These algorithms are fundamentally counter-based and use the Misra-Gries algorithm as a subroutine, but they also use random sampling and hashing in crucial ways.
+Recently, in \cite{BDW16}, Bhattacharyya et al.~introduced two new algorithms for the $(\eps, \phi)$-heavy hitters problem that improve on the space usage of \textsc{Frequent}, particularly when $\varphi \gg \eps$. One of their algorithms uses $O(\eps^{-1}\log\varphi^{-1}+\varphi^{-1} \log n + \log \log m)$ bits of storage, which is optimal upto constant factors. Moreover, the algorithms take a constant amount of time per update. These algorithms are fundamentally counter-based and use the Misra-Gries algorithm as a subroutine, but they also use random sampling and hashing in crucial ways.
 
 \subsection{Our Work}
 Given the strong theoretical guarantees of the algorithms proposed in \cite{BDW16}, it is natural to wonder how well they fare in practice. 
@@ -184,11 +177,21 @@ An algorithm for the $(\eps,\varphi)$-heavy hitters problem is said to satisfy t
 $$|\tilde{f}_i - f_i| \leq \eps \cdot F_1^{\text{res}(k)}$$
 for all $i$ in the output set of the algorithm.
 \end{definition}
+The larger the $K$ we can get for the tail bound, the stronger is the obtained guarantee. 
 
+
+Our proposed algorithms use the notion of a {\em universal hash family}, which we define next.
+\begin{definition}
+A family $\mathcal{H}$ consisting of functions $h: U \to [m]$ is said to be a {\em universal hash family} if 
+for all distinct $x, y \in U$:
+$$\Pr_{h \leftarrow \mathcal{H}}[h(x)=h(y)] \leq \frac1m$$
+where the probability is over $h$ drawn uniformly at random from $\mathcal{H}$. 
+\end{definition}
+It is folklore that if $m \leq |U|$, there exists a universal hash family whose members can be represented uniquely using $O(\log |U|)$ bits.
 
 \subsection{The \textsc{Frequent} algorithm}   
     \begin{algorithm}
-    	\caption{\textsc{Frequent}}
+    	\caption{\textsc{Frequent}, \cite{MG82}}
 	\label{fig:freq}
     	\SetAlgoLined
 	\SetKwProg{Fn}{Function}{}{}
@@ -198,20 +201,20 @@ for all $i$ in the output set of the algorithm.
 	\textbf{Initialization:}
 \Begin{
 	Empty set $T $\\
-Empty array $c$ of length\footnote{In fact, $c$ will only contain at most $t$ nonzero elements, so it can be implemented as a table with $O(t)$ rows.} $n$\\
+Empty array $c$ of length $n$\\
  }   	
 	\Fn{Insert(i)}{
     	\If{$i \in T$}{
     	$c_i \leftarrow c_i + 1$;\\
 	}
     	\ElseIf{$|T| < t$} {
-    	 $T \leftarrow T \cup {i}$;\\
+    	 $T \leftarrow T \cup \{i\}$;\\
     	$c_i \leftarrow 1$;\\
 }
 	\Else{
     	 \ForEach{$j \in T$}{
     	$c_j \leftarrow c_j - 1$;\\
-    	\lIf{$c_j = 0$}{$T \leftarrow T\setminus {j}$}
+    	\lIf{$c_j = 0$}{$T \leftarrow T\setminus \{j\}$}
 }
 }
 }
@@ -226,8 +229,8 @@ Empty array $c$ of length\footnote{In fact, $c$ will only contain at most $t$ no
 
 \ignore{In the algorithm, each new item is compared with stored items and if the new item is among the stored items, then the count value of stored items is incremented. Else, if it is not the one already present and there is some counter whose value is zero, then this item in the table is stored and the counter value is set to one. Else if all counter value is non-zero, then the counter value is decremented by 1 for each item. }
 A simple grouping argument can be used to verify the correctness of the algorithm. With $t = \lceil 1/\eps \rceil$ counters, \textsc{Frequent} solves the $(\eps,\phi)$-Heavy hitters problem using $O(\varepsilon^{-1} (\log n + \log m))$ bits of space. Berinde et al.~\cite{BCIS} showed a stronger tail bound:
-\begin{theorem}(\cite{BCIS})
-For any $t > \frac1\eps$, the \textsc{Frequent} algorithm with $t$ counters satisfies the $\left(t-\frac1\eps\right)$-tail bound and uses $O(t(\log n + \log m))$ bits of storage.
+\begin{theorem}(\cite{BCIS})\label{thm:tailfreq}
+For any $t \geq \frac1\eps$, the \textsc{Frequent} algorithm with $t$ counters satisfies the $\left(t-\frac1\eps\right)$-tail bound and uses $O(t(\log n + \log m))$ bits of storage.
 \end{theorem}
 \ignore{
 We sketch an analysis of the error bound present in Berinde et al. \cite{BCIS}. 
@@ -279,7 +282,7 @@ The first algorithm of \cite{BDW16}, which we dub \textsc{CompressedFrequent}, i
 $\ell \leftarrow 6\log(6/\delta)/\varepsilon^{2}$.\\ 
 Hash function $h$ drawn uniformly from a universal family $H \subseteq \left\{[n] \rightarrow 
     	[4\ell^{2}/\delta ] \right\}.$ \\
-An empty \textsc{Frequent} data structure\footnote{In terms of the code in Algorithm \ref{fig:freq}, $\mathcal{T}_1[i]$ is null if $i \not \in \mathcal{T}$ and equals $c_i$ otherwise.} $\mathcal{T}_{1}$ with $\varepsilon^{-1}$ counters. \\
+An empty \textsc{Frequent} data structure $\mathcal{T}_{1}$ with $\varepsilon^{-1}$ counters. \\
 \ignore{Each key entry of $\mathcal{T}_{1}$ can store \hspace*{.5cm} an integer of $[0,\lceil{400l^2/\delta}\rceil]$ and each value \hspace*{.6cm}entry can store an integer in $[0,11\ell]$. The \hspace*{.6cm}Table $\mathcal{T}_{1}$ will be in sorted order by value \hspace*{.6cm}throughout}
 An empty set $\mathcal{T}_{2}$. \\
 \ignore{Each \hspace*{.5cm}entry of $\mathcal{T}_{2}$ can store an integer in $[0,n]$. \hspace*{.5cm}The entries of $\mathcal{T}_{2}$ will correspond to ids of \hspace*{.5cm}the keys in $\mathcal{T}_{1}$ of the highest $1/\varphi$ values}
@@ -325,13 +328,12 @@ We start with the observation that the algorithms proposed in \cite{BDW16} canno
     	\SetAlgoLined
 	\SetKwProg{Fn}{Function}{}{}
 
-	\KwData{Parameters $\eps, \phi, \delta \in (0,1)$ with $\eps\leq\phi$.}
+	\KwData{Width $w$, Input parameters $\phi, \delta \in (0,1)$.}
 
 
 \textbf{Initialization}:
 \Begin{
-$\ell \leftarrow 2\log(1/\delta\phi)$\\
-$w \leftarrow 2/\eps$\\
+$\ell \leftarrow \log(4/\delta\phi)$\\
 Hash functions $h_1, \dots, h_\ell$ drawn uniformly from a universal family $H \subseteq \left\{[n] \to [w] \right\}.$ \\
 Empty \textsc{Frequent} data structure $\mathcal{T}$ with $2/\phi$ counters.\\
 Empty matrix $\mathcal{C}$ with $\ell$ rows and $w$ columns.
@@ -351,16 +353,37 @@ Output $(x,\hat{f}_x)$\;
 Our first algorithm, shown above, runs the Count-Min sketch on the output of a \textsc{Frequent} counter solving the $(\phi,\phi/2)$-Heavy hitters problem.
 
 \begin{theorem}
-For any $w \geq \frac2\eps$ and $\delta \in [0,1]$,  \textsc{SketchFrequent} satisfies the $\sqrt{\delta w/(2 \log \delta^{-1} \varphi^{-1})}$-tail bound with probability $1-\delta$ 
+Let $\ell = \log(4/\delta \varphi)$ as in the algorithm above.  Suppose that $\eps < \frac{\varphi^2 \delta}{2\ell}$. 
+
+For any $w \geq \frac2\eps$ and $\delta \in [0,1]$,  \textsc{SketchFrequent} satisfies the $\sqrt{\frac{\delta w}{\ell}}$-tail bound with probability $1-\delta$ 
 and uses 
-$O(\varphi^{-1} \log n + w \log \phi^{-1} \log m)$ bits of storage.
+$O(\varphi^{-1} \log n + w \log (\delta\phi)^{-1} \log m)$ bits of storage.
+
+In particular, for $w = \frac2\eps$ and $\delta=\frac15$, \textsc{SketchFrequent} solves the $(\eps,\phi)$-heavy hitters problem with probability at least $\frac45$ using $O(\varphi^{-1}\log n + \eps^{-1} \log \phi^{-1} \log m)$ bits\footnote{The assumption that $\eps <\varphi^2\delta/2\ell$ is not needed for the last part of the theorem.}.
 \ignore{
 solves the $(\phi, \eps)$-Heavy hitters problem. In particular, for any $0 \leq k \leq \sqrt{\delta w/\ell}$, with probability at least $1-\delta$, for any $(x, \hat{f}_x)$ reported by the algorithm,
 $$0 \leq \hat{f}_x - f_x \leq \eps F_1^{\text{res}(k)}.$$
 The algorithm uses $O(\phi^{-1} \log  n + \eps^{-1} \log \phi^{-1} \log m)$ bits of storage.}
 \end{theorem}
+\begin{proof}The space complexity is immediate. We will focus on the tail bound.
+We argue first that on the top $k=\sqrt{\delta w/\ell}$ elements of the stream, $h_1, \dots, h_\ell$ do not collide with probability at least $1-\delta/2$.
+\begin{lemma}
+Let $k = \sqrt{\delta w/\ell}$. For any fixed $T \subseteq [n]$ of size $k$,
+$$\Pr[\exists i \in [\ell], \exists x \neq y \in T, h_j(x)=h_j(y)] < \delta/2.$$
+\end{lemma}
 \begin{proof}
-Correctness and the space bound follows from the guarantees for the Count-Min sketch and taking the union bound on the $2/\phi$ elements in $\mathcal{T}$ (see, for example, \cite{ChekuriNotes}). The tail bound arises from the fact that on the top $\sqrt{\delta w/\ell}$ elements of the stream, $h_1, \dots, h_\ell$ do not collide with probability at least $1-\delta$ (similar to Lemma \ref{lem:nocoll} below). 
+By definition of a universal hash family, for any fixed $i \in [\ell]$ and $x \neq y \in T$, $\Pr[h_i(x)=h_i(y)]<1/w$. Using the union bound:
+$$\Pr[\exists i \in [\ell], \exists x \neq y \in T, h_i(x)=h_i(y)] \leq \ell \cdot {t \choose 2} \cdot \frac1w < \frac{\delta}{2}$$
+\end{proof}
+Condition on the above event. Note that by our assumption, $k>2/\varphi$. We can now run the usual analysis of the count-min sketch, which we reproduce here for completeness. 
+
+Consider an $x \in [n]$ that is stored in one of $\mathcal{T}$'s counters. Because of the above, and using again universality of the hash family, for any $i \in [\ell]$:
+$$\mathbb{E}[C[i][h_i(x)]] = f_x + \frac1w\sum_{y>k} f_y = f_x + \frac{F_1^{\text{res}(k)}}{w} \leq f_x + \frac{\eps}{2} F_1^{\text{res}(k)}.$$
+Then, by Markov's inequality:
+$\Pr[C[i][h_i(x)]-f_x > \eps F_1^{\text{res}(k)}] \leq \frac12$. Therefore:
+$$\Pr[\hat{f}_x - f_x > \eps F_1^{\text{res}(k)}] \leq \frac{1}{2^\ell} = \frac{\phi\delta}{4}.$$
+Doing a union bound over $\frac2\varphi$ elements shows that with probability at least $1-\delta/2$, for each $x \in \mathcal{T}$,
+$\hat{f}_x - f_x \leq \eps F_1^{\text{res}(k)}$. Moreover, observe that every $x$ with $f_x \geq \varphi m$ is output by the algorithm.
 \end{proof}
 
 \subsection{\textsc{DoubleFrequent}}
@@ -370,7 +393,7 @@ Correctness and the space bound follows from the guarantees for the Count-Min sk
     	\SetAlgoLined
 	\SetKwProg{Fn}{Function}{}{}
 
-	\KwData{Parameters $\eps, \phi, \delta \in (0,1)$ with $\eps\leq\phi/2$.}
+	\KwData{Number of counters $t$, Input parameters $\eps,\phi, \delta \in (0,1)$ with $\eps\leq\phi/2$.}
 
 
 \ignore{		\textbf{Input:} A stream S of length m over universe $\mathcal{U}=[n]$; let f(x) be the frequency of $x\in \mathcal{U}$ in S\\
@@ -379,9 +402,9 @@ Correctness and the space bound follows from the guarantees for the Count-Min sk
 }	
 \textbf{Initialization}:
 \Begin{
-Hash function $h$ drawn uniformly from a universal family $H \subseteq \left\{[n] \to [4/(\delta\eps^2)] \right\}.$ \\
+Hash function $h$ drawn uniformly from a universal family $H \subseteq \left\{[n] \to [t^2/\delta] \right\}.$ \\
 An empty \textsc{Frequent} data structure $\mathcal{T}_{1}$ with $2/\phi$ counters. \\
-An empty \textsc{Frequent} data structure  $\mathcal{T}_{2}$ with $1/\eps$ counters. \\
+An empty \textsc{Frequent} data structure  $\mathcal{T}_{2}$ with $t$ counters. \\
 }
 \Fn{Insert($x$)}{
 Insert $x$ into $\mathcal{T}_{1}$\;
@@ -396,13 +419,15 @@ Output $(x,\mathcal{T}_{2}[h(x)])$\;
 
 	\vspace*{.3cm}
 
-Our second algorithm runs two \textsc{Frequent} algorithms in parallel. The first is a gross estimation of the frequencies with relative error up to $\phi/2$. This is done to filter out a list of $O(1/\phi)$ elements on which we would like the estimate to be more accurate. For this, we use more counters but we also hash the universe size down to $\textrm{poly}(1/\eps)$ to save space. The resulting algorithm inherits the desirable tail behavior of \textsc{Frequent}.
+Our second algorithm runs two \textsc{Frequent} algorithms in parallel. The first is a gross estimation of the frequencies with relative error up to $\phi/2$. This is done to filter out a list of $O(1/\phi)$ elements on which we would like the estimate to be more accurate. For this, we use more counters but we also hash the universe size down to $\textrm{poly}(1/\eps)$ to save space. The resulting algorithm inherits the desirable tail behavior of \textsc{Frequent}. The analysis which follows is an interesting mix of the analyses for \textsc{Frequent} and the Count-Min sketch.
 
 \ignore{
 	Proposed algorithm is simple algorithm with space complexity of $O(1/\varphi\log n + 1/\varepsilon\log {1/\varepsilon} + 1/\varepsilon \log s)$. In this proposed algorithm, upon picking item $x$ from stream S, If $x$ is already present in $\mathcal{T}_{1}$ then increment its counter value by 1.If $x$ is not present in $\mathcal{T}_{1}$ and $\mathcal{T}_{1}$ is not Full then put $x$ into $\mathcal{T}_{1}$ and make its counter value 1. If $x$ is not present in $\mathcal{T}_{1}$ and $\mathcal{T}_{1}$ is Full then decrement value for each counter value in $\mathcal{T}_{1}$ and if any counter value of some element say $y$ is zero then replace $y$ with $x$ and make $x$ counter value to be 1.
 }
 \begin{theorem}
-For any $t > \frac1\eps$ and $\delta \in [0,1]$, \textsc{DoubleFrequent} satisfies the $\left(t-\frac1\eps\right)$-tail bound with probability $1-\delta$ and uses $O(\varphi^{-1} \log n + t \log m + t \log (\delta\eps)^{-1})$ bits of storage.
+Assume $\eps < \varphi/2$. For any $t \geq \frac1\eps$ and $\delta \in [0,1]$, \textsc{DoubleFrequent} satisfies the $\left(t-\frac1\eps\right)$-tail bound with probability $1-\delta$ and uses $O(\varphi^{-1} \log n + t \log m + t \log (t/\delta))$ bits of storage.
+
+In particular, setting $t=1/\eps$ and $\delta=1/5$, \textsc{DoubleFrequent} solves the $(\eps,\varphi)$-heavy hitters problem with probability at least $\frac45$ using space $O(\varphi^{-1}\log n + \eps^{-1} \log m + \eps^{-1} \log \eps^{-1})$ bits of storage.
 
 \ignore{
 solves the $(\phi, 2\eps)$-Heavy hitters problem. In particular, for any $0\leq k \leq 1/\eps$, with probability at least $1-\delta$, for any $(x,\hat{f}_x)$ reported by the algorithm,
@@ -412,54 +437,52 @@ The algorithm uses $O(\phi^{-1} \log n + \eps^{-1} \log m)$ bits of storage.}
 \begin{proof}
 First, observe that there are likely going to be no hash collisions among the top $1/\eps$ elements in the stream.	
 \begin{lemma}\label{lem:nocoll}
-If $S \subseteq [n]$ of size $1/\varepsilon$ and $\mathcal{H} \subseteq \{h|h:[n]\to [4 \delta^{-1}\varepsilon^{-2}]\}$ is a universal hash family, then:
-$$\Pr[\exists i \neq j \in S, h(i) = h(j)] \leq \delta/4$$.
- where $h$ is chosen from $\mathcal{H}$ uniformly at random.\\
+For any fixed $S \subseteq [n]$ of size $t$:
+$$\Pr[\exists x \neq y \in S, h(x) = h(y)] \leq \frac{\delta}{2}.$$
 \end{lemma}
 \begin{proof}
 By the union bound and definition of universal hash family,
 \begin{align*}
-\Pr[\exists i \neq j \in S, h(i) = h(j)] &\leq \sum_{i\neq j \in S} \Pr[h(i)=h(j)]\\ 
-&\leq \frac{1}{\eps^2} \frac{\delta \eps^2}{4} = \frac{\delta}{4}
+\Pr[\exists x \neq y \in S, h(x) = h(y)] &\leq {t \choose 2} \cdot \frac{1}{2t^2/\delta} \leq \frac{\delta}{2} 
 \end{align*}
 \end{proof}
-Henceforth, condition on Lemma \ref{lem:nocoll} holding true for the top $1/\eps$ elements. Define:
-$$\overline{f}_x=\sum_{y:h(y)=h{x}}f_y.$$
+Henceforth, condition on Lemma \ref{lem:nocoll} holding true for the top $t$ elements. Define:
+$$\overline{f}_x=\sum_{y:h(y)=h(x)}f_y.$$
 Clearly, $\overline{f}_x \geq f_x$ for any $x$.
 Also, without loss of generality, suppose that $f_1 \geq f_2 \geq \cdots \geq f_n$ so that:
 $$F^{\text{res}(k)}_1=\sum_{i=k+1}^n f_{i}.$$
-\begin{lemma}
-For any $0 \leq k \leq 1/\eps$:
-$$\Pr[\exists x, \mathcal{T}_1[x] \geq \phi m/2 \wedge \overline{f}_x > f_x +\frac{\eps}{2} F_1^{\text{res}(k)}] < \frac{\delta}{2}$$
+\begin{lemma}\label{lem:flb}
+For any $0 \leq k \leq t$:
+$$\Pr[\exists x, \mathcal{T}_1[x] \geq \phi m/2 \wedge \overline{f}_x > f_x +\eps \cdot F_1^{\text{res}(k)}] < \frac{\delta}{2}$$
 \end{lemma}
 \begin{proof}
-We observe that for $x$ is among the top $2/\phi \leq 1/\eps$ elements. For any $x<1/\eps$:
+We observe that for $x$ is among the top $2/\phi \leq 1/\eps \leq t$ elements. For any such $x$:
 \begin{equation*}
 \mathbb{E} \overline{f}_x = f_x + \mathbb{E} \sum_{y \neq x: h(y)=h(x)} f_y
- = f_x + \mathbb{E} \sum_{y > 1/\eps: h(y)=h(x)} f_y
+ = f_x + \mathbb{E} \sum_{y > t: h(y)=h(x)} f_y
 \end{equation*}
-where the last equality is from conditioning on no collisions in the top $1/\eps$ elements. Again, using the definition of universal hash family, we get that:
-$$\mathbb{E} \overline{f}_x \leq f_x + \frac{\delta \eps^2}{4} F_1^{\text{res}(k)}$$
-for any $k \leq 1/\eps$. By the union bound:
-$$\Pr[\exists x \leq 1/\eps, \overline{f}_x > f_x + \eps F_1^{\text{res}(k)}]< \frac{1}{\eps} \frac{\delta\eps}{2} = \frac{\delta}{2}$$
+where the last equality is from conditioning on no collisions in the top $t$ elements. Again, using the definition of universal hash family, we get that:
+$$\mathbb{E} \overline{f}_x \leq f_x + \frac{\delta}{2t^2} F_1^{\text{res}(k)}$$
+for any $k \leq t$. By Markov's inequality and the union bound:
+$$\Pr[\exists x, \mathcal{T}_1[x] \geq \phi m/2 \wedge \overline{f}_x > f_x +\eps \cdot F_1^{\text{res}(k)}] < \frac{2}{\varphi} \frac{1}{\eps} \frac{\delta}{2t^2} \leq \frac{\delta}{2}$$
 \end{proof}
 We now bound the error from the use of the \textsc{Frequent} algorithm in $\mathcal{T}_2$.
-\begin{lemma}
-For all $x$ and all $0 \leq k \leq 1/\eps$:
-$$\overline{f}_x - \mathcal{T}_2[h(x)] \leq \frac{F_1^{\text{res}(k)}}{1/\eps - k}$$
+\begin{lemma}\label{lem:fub}
+For all $x$ and all $0 \leq k \leq t-\frac{1}{\eps}$:
+$$\overline{f}_x - \mathcal{T}_2[h(x)] \leq \eps F_1^{\text{res}(k)}.$$
 \end{lemma}
 \begin{proof}
-This directly follows from the bound (\ref{eqn:freq_tail}) shown in \cite{BICS} and the fact that the top-$k$ residual of the $\overline{f}_x$ is at most the top-$k$ residual of $f_x$.
+This directly follows from Theorem \ref{thm:tailfreq} shown in \cite{BCIS} and the fact that the top-$k$ residual of the $\overline{f}_x$ is at most the top-$k$ residual of $f_x$.
 \end{proof}
-Putting the lemmas together, we get that with probability at least $1-\delta$, for all $x$ such that $\mathcal{T}_1[x] \geq \phi m/2$:
+Putting the lemmas together, we get that with probability at least $1-\delta$, for all $0\leq k \leq t-\frac1\eps$, if $x$ is such that $\mathcal{T}_1[x] \geq \phi m/2$:
 \begin{align*}
-f_x \leq \overline{f}_x \leq \mathcal{T}_2[h(x)] + \frac{F_1^{\text{res}(k)}}{1/\eps -k}
+f_x \leq \overline{f}_x \leq \mathcal{T}_2[h(x)] + \eps {F_1^{\text{res}(k)}}
 \end{align*}
-and
+from Lemma \ref{lem:fub} and
 \begin{align*}
-f_x \geq \overline{f}_x - \frac{\eps}{2} F_1^{\text{res}(k)} \geq \mathcal{T}_2[h(x)] - \frac{\eps}{2} F_1^{\text{res}(k)} 
+f_x \geq \overline{f}_x - {\eps}{} F_1^{\text{res}(k)} \geq \mathcal{T}_2[h(x)] - {\eps}{} F_1^{\text{res}(k)} 
 \end{align*}
-The error bound follows as $\eps/2 < 1/(1/\eps - k)$ for any $k \geq 0$.
+from Lemma \ref{lem:flb}.
 
 The space bound for \textsc{DoubleFrequent} is immediate from the space bound for \textsc{Frequent}.
 \end{proof}
@@ -535,7 +558,7 @@ vector $f$, we want to find a vector $f'$
 such that $f'$ is
 $k$-sparse (has only $k$ nonzero entries) and the $p$-norm
 error $\|f - f'\|_p = (\sum_i |f_i - f'_i|^p)^{1/p}$ is minimized.
-The next theorem shows that if $k ≤ 1/\varphi$, taking the
+The next theorem shows that if $k \leq 1/\varphi$, taking the
 top $k$ of the output of \textsc{DoubleFrequent} is a good
 approximation.
 
