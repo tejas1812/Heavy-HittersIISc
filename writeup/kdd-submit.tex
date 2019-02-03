@@ -4,7 +4,7 @@
 
 \usepackage{algorithmic}
 \usepackage[ruled]{algorithm2e}
-
+\usepackage{subcaption}
 
 %
 % defining the \BibTeX command - from Oren Patashnik's original BibTeX documentation.
@@ -579,6 +579,67 @@ top-$k$ elements of the stream in correct order.
 \begin{proof}
 Corollary of Theorem 9 of \cite{BCIS}.
 \end{proof}
+
+\section{Experimental Evaluations}
+
+\subsection{Setup}
+Existing algorithms for the heavy hitters problem have been carefully implemented in a few different places:
+the MassDAL Public Code Bank \cite{massdal}, its extension by Cormode \cite{corimpl}, and the Yahoo Sketches Library \cite{yahoolib}.
+We chose to build on the second option, Cormode's C++ extension of the MassDAL codebase, to include our implementations. We ran our experiments on a standard
+laptop \textcolor{red}{[machine info]}. Our code is available at \cite{ourgit}.
+
+Among previous algorithms, we considered \textsc{Frequent} and \textsc{LCDelta} (a version of the Lossy Counting algorithm of Manku and Motwani \cite{MM02}; see \cite{FrequentSurvey}). 
+For new algorithms, in addition to the above described \textsc{SketchFrequent} and \textsc{DoubleFrequent}, we also considered \textsc{SketchLC} and \textsc{DoubleLC}
+which invoke the \textsc{LCDelta} algorithm in place of \textsc{Frequent}. The analyses of \textsc{SketchLC} and \textsc{DoubleLC} mimic that of \textsc{SketchFrequent} and \textsc{DoubleFrequent}
+respectively, and we do not reproduce them.
+
+\begin{figure*}
+\centering
+\begin{subfigure}[b]{0.5\textwidth}
+\includegraphics[width=\textwidth]{../Plots/storage_skew.png}
+\caption{Zipf: Space vs.~skew}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.5\textwidth}
+\includegraphics[width=\textwidth]{../Plots/time_skew.png}
+\caption{Zipf: Update time vs.~skew}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.5\textwidth}
+\includegraphics[width=\textwidth]{../Plots/recall_skew.png}
+\caption{Zipf: Recall vs.~skew}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.5\textwidth}
+\includegraphics[width=\textwidth]{../Plots/precision_skew.png}
+\caption{Zipf: Precision vs.~skew}
+\end{subfigure}
+\end{figure*}
+
+
+\begin{figure*}
+\centering
+\begin{subfigure}[b]{0.5\textwidth}
+\includegraphics[width=\textwidth]{../Plots/storage_phi.png}
+\caption{Generated: Space vs.~$\phi$}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.5\textwidth}
+\includegraphics[width=\textwidth]{../Plots/time_phi.png}
+\caption{Generated: Update time vs.~$\phi$}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.5\textwidth}
+\includegraphics[width=\textwidth]{../Plots/recall_phi.png}
+\caption{Generated: Recall vs.~$\phi$}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.5\textwidth}
+\includegraphics[width=\textwidth]{../Plots/precision_phi.png}
+\caption{Generated: Precision vs.~$\phi$}
+\end{subfigure}
+\end{figure*}
+
 
 %
 % The next two lines define the bibliography style to be used, and the bibliography file.
