@@ -402,7 +402,7 @@ $\hat{f}_x - f_x \leq \eps F_1^{\text{res}(k)}$. Moreover, observe that every $x
 }	
 \textbf{Initialization}:
 \Begin{
-Hash function $h$ drawn uniformly from a universal family $H \subseteq \left\{[n] \to [t^2/\delta] \right\}.$ \\
+Hash function $h$ drawn uniformly from a universal family $H \subseteq \left\{[n] \to [2t^2/\delta] \right\}.$ \\
 An empty \textsc{Frequent} data structure $\mathcal{T}_{1}$ with $2/\phi$ counters. \\
 An empty \textsc{Frequent} data structure  $\mathcal{T}_{2}$ with $t$ counters. \\
 }
@@ -472,7 +472,7 @@ For all $x$ and all $0 \leq k \leq t-\frac{1}{\eps}$:
 $$\overline{f}_x - \mathcal{T}_2[h(x)] \leq \eps F_1^{\text{res}(k)}.$$
 \end{lemma}
 \begin{proof}
-This directly follows from Theorem \ref{thm:tailfreq} shown in \cite{BCIS} and the fact that the top-$k$ residual of the $\overline{f}_x$ is at most the top-$k$ residual of $f_x$.
+This directly follows from Theorem \ref{thm:tailfreq} shown in \cite{BCIS} and the fact that the residual $k$-tail of $\overline{f}$ is at most the residual $k$-tail of $f$.
 \end{proof}
 Putting the lemmas together, we get that with probability at least $1-\delta$, for all $0\leq k \leq t-\frac1\eps$, if $x$ is such that $\mathcal{T}_1[x] \geq \phi m/2$:
 \begin{align*}
@@ -585,62 +585,194 @@ Corollary of Theorem 9 of \cite{BCIS}.
 \subsection{Setup}
 Existing algorithms for the heavy hitters problem have been carefully implemented in a few different places:
 the MassDAL Public Code Bank \cite{massdal}, its extension by Cormode \cite{corimpl}, and the Yahoo Sketches Library \cite{yahoolib}.
-We chose to build on the second option, Cormode's C++ extension of the MassDAL codebase, to include our implementations. We ran our experiments on a standard
-laptop \textcolor{red}{[machine info]}. Our code is available at \cite{ourgit}.
+We chose to build on the second option, Cormode's C++ extension of the MassDAL codebase, to include our implementations. We deployed our experiments on a standard
+laptop with an Intel Core i7-6700HQ processor at 260 GHz and 16 GB of RAM, running Ubuntu 4.8.4. The C++ code was compiled using \texttt{gcc}.
+({Due to the double-blind reviewing policy, we are unable to give a pointer to the code currently; however, it will be made public in the future.})
+\begin{anonsuppress}
+Our code is available at \cite{ourgit}.
+\end{anonsuppress}
 
-Among previous algorithms, we considered \textsc{Frequent} and \textsc{LCDelta} (a version of the Lossy Counting algorithm of Manku and Motwani \cite{MM02}; see \cite{FrequentSurvey}). 
-For new algorithms, in addition to the above described \textsc{SketchFrequent} and \textsc{DoubleFrequent}, we also considered \textsc{SketchLC} and \textsc{DoubleLC}
+Among previous algorithms, we considered \textsc{Frequent} and \textsc{LCDelta}. \textsc{LCDelta} is a version of the Lossy Counting algorithm of Manku and Motwani \cite{MM02} that is
+described in Cormode and Hadjieleftheriou's survey \cite{FrequentSurvey} and that outperforms \textsc{Frequent} in many of their experiments. 
+For our new algorithms, in addition to the above described \textsc{SketchFrequent} and \textsc{DoubleFrequent}, we also considered \textsc{SketchLC} and \textsc{DoubleLC}
 which invoke the \textsc{LCDelta} algorithm in place of \textsc{Frequent}. The analyses of \textsc{SketchLC} and \textsc{DoubleLC} mimic that of \textsc{SketchFrequent} and \textsc{DoubleFrequent}
 respectively, and we do not reproduce them.
+\begin{figure*}[!t]
+\centering
+\begin{subfigure}[b]{0.33\textwidth}
+\includegraphics[width=\textwidth]{../Plots/storage_phi.png}
+\caption{Planted: Space vs.~$\phi$}
+\label{fig:plspphi}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.33\textwidth}
+\includegraphics[width=\textwidth]{../Plots/time_phi.png}
+\caption{Planted: Update time vs.~$\phi$}
+\label{fig:pltimphi}
+\end{subfigure}
 
+\begin{subfigure}[b]{0.33\textwidth}
+\includegraphics[width=\textwidth]{../Plots/recall_phi.png}
+\caption{Planted: Recall vs.~$\phi$}
+\label{fig:plrecphi}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.33\textwidth}
+\includegraphics[width=\textwidth]{../Plots/precision_phi.png}
+\caption{Planted: Precision vs.~$\phi$}
+\label{fig:plprephi}
+\end{subfigure}
+\caption{Comparison between the algorithms when run on data generated from the planted model. Here, $\eps$ is fixed to $10^{-3}$.}
+\label{fig:fixeps}
+\end{figure*}
+
+We ran experiments on two sets of synthetically generated data. The first set is generated from a planted distribution where $5$ randomly
+chosen elements each constitute $2\%$ of the stream, while the other $n-5$ elements are inserted with uniform probability for the rest $90\%$ of the stream. Here, we
+set the universe size $n = 10^5$ and the length of each stream $m=100$. The second set is generated from skewed {Zipfian} distributions, where the skew ranges from $1.2$ to $2$. 
+In this case, the streams are drawn from a universe of size $10^5$, while the length of each stream is $16$.  
+For both datasets, we varied $\eps$ from $10^{-5}$ to $10^{-2}$ and varied $\phi$ from $0.004$ to $0.01$ (while keeping $\phi \geq \eps$).
+
+Note that although we do not test our algorithms on real-world datasets, the latter can often be approximated with Zipfian distributions. For example, it has been established that sizes of cities and word frequencies in text \cite{zipf}, citations of papers \cite{red98}, web page accesses \cite{bre99}, and file transfer sizes \cite{bes99} have distributions whose tails are bounded by Zipfian distributions. Thus, we can reasonably expect that the results of our experiments on the Zipfian dataset capture some behavior that would be observed in reality.
+
+The algorithms are compared below according to the following attributes:
+\begin{itemize}
+\item
+\textbf{Space}: Storage space used, measured in bytes
+\item
+\textbf{Update time}: Time take to insert all the items in the stream, measured in milliseconds
+\item
+\textbf{Recall}: number of true heavy hitters reported, divided by the total number of true heavy hitters.
+\item
+\textbf{Precision}:number of true heavy hitters reported, divided by the total number of items reported.
+\end{itemize}
+For each of the above, we performed 5 runs per experiment.
+
+\subsection{Planted Data}
+
+
+
+
+First, we present results for the dataset generated using the planted model. We investigated how the different algorithms fare
+against each other as we vary the parameters $\phi$ and $\eps$. Figure \ref{fig:fixeps} shows the data when $\eps=0.001$ and $\phi$
+is varied, while Figure \ref{fig:fixphi} is for $\phi=0.01$ and $\eps$ varying.
+
+Consider the case when $\phi$ is varied. Figure \ref{fig:plspphi} shows that as $\phi$ becomes larger, \textsc{DoubleFrequent} uses the least space.
+Second in the race is \textsc{LCDelta} which beats out \textsc{DoubleLC}. \textsc{Frequent} and the algorithms using sketches need at least $50\%$ 
+more space. In terms of update time, Figure \ref{fig:pltimphi} shows that \textsc{LCDelta} and \textsc{DoubleLC} are far more efficient than the rest,
+while those two are comparable. Figures \ref{fig:plrecphi} and \ref{fig:plprephi} show that all the algorithms achieve perfect recall and precision for this setting of parameters.
+
+Now, we turn to Figure \ref{fig:fixphi} where $\eps$ is varied as $\phi$ is kept at 0.01. The range over which $\eps$ is varied is much bigger ($10^{-5}$ to $10^{-2}$) than the range over which $\phi$ was varied in Figure \ref{fig:fixeps}, so here, we see a more high-level view of the algorithms' behavior. As $\eps$ becomes small, the algorithm taking the least amount of space is \textsc{DoubleFrequent} followed by \textsc{LCDelta} and \textsc{DoubleLC} (Figure \ref{fig:plspeps}). Note that when $\eps$ is not much smaller than $\phi=0.01$, all the algorithms have roughly the same space usage.  In terms of update time (Figure \ref{fig:pltimeps}), again as above, \textsc{LCDelta} and \textsc{DoubleLC} have by far the best performance, whether for small or large $\eps$. For precision and recall (Figures \ref{fig:plreceps} and \ref{fig:plpreeps}), all the algorithms have perfect precision and recall\footnote{Except for one datapoint at $\eps=10^{-5}$ in Figure \ref{fig:plreceps} which we believe is due to the probabilistic nature of \textsc{DoubleLC}}.
+
+Overall, we see that \textsc{DoubleFrequent} has the best performance in terms of space, although its updates are slow compared to \textsc{LCDelta} and \textsc{DoubleLC}. Surprisingly, for our planted dataset, \textsc{DoubleLC} does not offer any advantages over \textsc{LCDelta}. The algorithms using sketching, \textsc{SketchFrequent} and \textsc{SketchLC}, are expensive in terms of both time and space. 
 \begin{figure*}
 \centering
-\begin{subfigure}[b]{0.5\textwidth}
+\begin{subfigure}[b]{0.33\textwidth}
+\includegraphics[width=\textwidth]{../Plots/storage_epsilon.png}
+\caption{Planted: Space vs.~$\eps$}
+\label{fig:plspeps}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.33\textwidth}
+\includegraphics[width=\textwidth]{../Plots/time_epsilon.png}
+\caption{Planted: Update time vs.~$\eps$}
+\label{fig:pltimeps}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.33\textwidth}
+\includegraphics[width=\textwidth]{../Plots/recall_epsilon.png}
+\caption{Planted: Recall vs.~$\eps$}
+\label{fig:plreceps}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.33\textwidth}
+\includegraphics[width=\textwidth]{../Plots/precision_epsilon.png}
+\caption{Planted: Precision vs.~$\eps$}
+\label{fig:plpreeps}
+\end{subfigure}
+\caption{Comparison between the algorithms when run on data generated from the planted model. Here, $\phi$ is fixed to $10^{-2}$.}
+\label{fig:fixphi}
+\end{figure*}
+
+\subsection{Zipfian Data}
+\begin{figure*}[b]
+\centering
+\begin{subfigure}[b]{0.3\textwidth}
 \includegraphics[width=\textwidth]{../Plots/storage_skew.png}
 \caption{Zipf: Space vs.~skew}
 \end{subfigure}
 ~
-\begin{subfigure}[b]{0.5\textwidth}
+\begin{subfigure}[b]{0.3\textwidth}
 \includegraphics[width=\textwidth]{../Plots/time_skew.png}
 \caption{Zipf: Update time vs.~skew}
 \end{subfigure}
 
-\begin{subfigure}[b]{0.5\textwidth}
+\begin{subfigure}[b]{0.3\textwidth}
 \includegraphics[width=\textwidth]{../Plots/recall_skew.png}
 \caption{Zipf: Recall vs.~skew}
 \end{subfigure}
 ~
-\begin{subfigure}[b]{0.5\textwidth}
+\begin{subfigure}[b]{0.3\textwidth}
 \includegraphics[width=\textwidth]{../Plots/precision_skew.png}
 \caption{Zipf: Precision vs.~skew}
 \end{subfigure}
+\caption{Comparison between the algorithms when run on Zipfian data. Skew varies as $\eps = 0.001$ and $\phi = 0.01$.}
 \end{figure*}
 
+Next, we present results for the Zipfian data. 
 
 \begin{figure*}
 \centering
-\begin{subfigure}[b]{0.5\textwidth}
-\includegraphics[width=\textwidth]{../Plots/storage_phi.png}
-\caption{Generated: Space vs.~$\phi$}
+\begin{subfigure}[b]{0.3\textwidth}
+\includegraphics[width=\textwidth]{../Plots/storage_phiskew.png}
+\caption{Zipf: Space vs.~$\phi$}
 \end{subfigure}
 ~
-\begin{subfigure}[b]{0.5\textwidth}
-\includegraphics[width=\textwidth]{../Plots/time_phi.png}
-\caption{Generated: Update time vs.~$\phi$}
+\begin{subfigure}[b]{0.3\textwidth}
+\includegraphics[width=\textwidth]{../Plots/time_phiskew.png}
+\caption{Zipf: Update time vs.~$\phi$}
 \end{subfigure}
 
-\begin{subfigure}[b]{0.5\textwidth}
-\includegraphics[width=\textwidth]{../Plots/recall_phi.png}
-\caption{Generated: Recall vs.~$\phi$}
+\begin{subfigure}[b]{0.3\textwidth}
+\includegraphics[width=\textwidth]{../Plots/recall_phiskew.png}
+\caption{Zipf: Recall vs.~$\phi$}
 \end{subfigure}
 ~
-\begin{subfigure}[b]{0.5\textwidth}
-\includegraphics[width=\textwidth]{../Plots/precision_phi.png}
-\caption{Generated: Precision vs.~$\phi$}
+\begin{subfigure}[b]{0.3\textwidth}
+\includegraphics[width=\textwidth]{../Plots/precision_phiskew.png}
+\caption{Zipf: Precision vs.~$\phi$}
 \end{subfigure}
+\caption{Comparison between the algorithms when run on Zipfian data. $\phi$ varies as $\eps = 0.001$ and $\text{skew} = 2$.}
+\end{figure*}
+
+\begin{figure*}
+\centering
+\begin{subfigure}[b]{0.3\textwidth}
+\includegraphics[width=\textwidth]{../Plots/storage_epsilonskew.png}
+\caption{Zipf: Space vs.~$\phi$}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.3\textwidth}
+\includegraphics[width=\textwidth]{../Plots/time_epsilonskew.png}
+\caption{Zipf: Update time vs.~$\phi$}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.3\textwidth}
+\includegraphics[width=\textwidth]{../Plots/recall_epsilonskew.png}
+\caption{Zipf: Recall vs.~$\phi$}
+\end{subfigure}
+~
+\begin{subfigure}[b]{0.3\textwidth}
+\includegraphics[width=\textwidth]{../Plots/precision_epsilonskew.png}
+\caption{Zipf: Precision vs.~$\phi$}
+\end{subfigure}
+\caption{Comparison between the algorithms when run on Zipfian data. $\epsilon$ varies as $\phi = 0.01$ and $\text{skew} = 2$.}
 \end{figure*}
 
 
+
+\section{Future Work}
+
+\clearpage
 %
 % The next two lines define the bibliography style to be used, and the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
