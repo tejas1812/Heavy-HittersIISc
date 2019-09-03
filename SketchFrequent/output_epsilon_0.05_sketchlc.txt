@@ -1,0 +1,6 @@
+done with init
+139625.057400 milliseconds
+CM depth: 4, width: 1999, long size: 8
+CM Size: 64760
+66876
+Now going to merge

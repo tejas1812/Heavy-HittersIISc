@@ -1,0 +1,542 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Skeleton LaTeX file: double column format.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%REMEMBER THAT THERES IS AN EIGHT PAGE SIZE RESTRICTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Sample file for ME Project Papers for Evaluation by Supervisor and Reader
+
+\documentclass{article}
+\usepackage{amsthm, mathtools}
+%\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+%\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\usepackage{multicol}
+\usepackage{amsmath}
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+\usepackage{amssymb}
+\usepackage{algorithmic}
+\usepackage[ruled]{algorithm2e}
+%\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+%\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+%\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{textcomp}
+%\usepackage{dirtytalk}
+%\usepackage{csquotes}
+\usepackage{fullpage}
+\usepackage{color}
+
+\newcommand{\ignore}[1]{}
+
+\newcommand{\eps}{\varepsilon}
+\renewcommand{\phi}{\varphi}
+
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+
+\ignore{
+\pagestyle{empty}
+\setlength{\topmargin}{ 0.25in}
+\setlength{\columnsep}{2.0pc}
+\setlength{\headheight}{0.0in}
+\setlength{\headsep}{0.0in}
+\setlength{\oddsidemargin}{-.19in}
+\setlength{\parindent}{1pc}
+\textheight 8.75in
+\textwidth 6.8in
+}
+\title{\large \bf Performance of space-optimal 	heavy hitters algorithms on realistic streams}
+\author{Ashish Kumar Sen\\Advisor: Prof. Arnab Bhattacharyya\\
+    Computer Science and Automation\\
+    Indian Institute of Science}
+
+\date{18 Oct, 2016}
+
+\begin{document}
+
+	\maketitle
+    \begin{center}
+        Mid-term ME Project Report
+    \end{center}
+        \vskip 12pt
+	\thispagestyle{empty}
+	\bibliographystyle{unsrt}
+	
+	    \begin{abstract}
+In a stream of $m$ items belonging to $\{1, \dots, n\}$, the {\em $(\eps, \phi)$-Heavy Hitters} problem is to output a set $S$ of items containing all items of frequency $\geq \phi m$ and no item of frequency $< (\phi-\eps)m$. It is one of the most heavily-studied problems in data streams, with a history of more than 30 years. 
+
+In this thesis, we investigate randomized counter-based algorithms for the heavy-hitters problem. We show that not only do they have nearly optimal space complexity in terms of worst-case analysis, (1) they can also be designed to have a strong error bound in terms of the frequency tail and (2) they perform favorably in practice on realistic data sets.
+
+\ignore{
+In the recent paper {\em An Optimal Algorithm for $\ell_1$-Heavy Hitters in Insertion Streams and Related Problems} by Bhattacharyya, Dey and Woodruff, the first space-optimal bounds have been given for returning the $\ell_1$-heavy hitters in a data stream of insertions, as well as  their approximate frequencies. Suppose there is stream of $m$ items in $\left\{1,2,.....n\right\}$ and we have parameters $0< \varepsilon <\varphi$ $\leqslant$ 1. For each item $i$ in the stream, let $f_i$ be the frequency of item $i$,  i.e the number of times item $i$ is repeated in the stream. This algorithm returns all items $i$ for which $f_i \geq \varphi m$ and returns no items $j$ for which $f_j \leq (\varphi-\varepsilon)m$. The space complexity of this algorithm is  $O(\varepsilon^{-1} \log \varphi^{-1} + \varphi^{-1} \log n + \log \log m)$ bits of space and the update time and reporting time for this algorithm are $O(1)$ in worst case and linear in the output size respectively. The algorithm has a randomized guarantee unlike previous algorithms in this setting.
+
+The goal of this thesis is to experimentally validate the performance of this algorithm against older, more established algorithms.  We also aim to give stronger theoretical bounds for streams whose frequency distribution follow Zipf's law.
+}	  
+	\end{abstract}	
+	
+	\hfill \\
+	
+	\begin{multicols}{2}
+	\section{Introduction}
+The {\em data streaming} model is an important tool for analyzing algorithms on massive data sets. Streaming algorithms
+take a long stream of items as input and produce a compact summary of the data as output. This summary can be used to answer queries about the properties of the input data stream. The algorithms are often (necessarily) both randomized and approximate, and we usually want them to take a single pass over the data.
+
+A concrete application is the problem of monitoring IP network traffic. Here, data stream management systems monitor IP packets sent on communication links and perform detailed statistical analyses. These analyses are crucial for fault diagnoses and for verifying network performance and security. Examples of such systems are Gigascope at AT\&T \cite{Giga} and CMON at Sprint \cite{CMON}.The main challenge in these systems is to quickly and accurately perform the needed analyses in the face of a very high rate of updates.
+
+\ignore{
+Today's world is the world of big data, with data generated, for instance, by queries to Google or in the form of IP addresses on the router. Sometimes, we may have devices to store the data and sometimes not. Due to the large data sizes, traditional algorithms fail to process the data. It may be difficult or almost impossible to store huge amount of data at one place and we want algorithm to run in linear or sub-linear time. Many a times, we may come across a situation in which we can not store the data physically in any device, e.g Internet traffic. 
+}
+
+In this work, we consider the {\em heavy-hitters} problem. Informally, the goal is to find the frequent elements in the stream; the same problem is also studied under the names of top-k, popular items, frequent items, elephants, or iceberg queries. It is very heavily studied and commonly used, e.g. in network analyses to find addresses that account for a large fraction of a network link utilization in a given time window. It is also often solved as a subroutine within more advanced data stream computations, e.g. approximating the entropy of a stream.
+
+We formulate the heavy-hitters problem rigorously as follows:
+\begin{definition}
+ ($(\varepsilon, \varphi)$-\textbf {Heavy Hitters Problem})
+    In the $(\varepsilon, \varphi)$-Heavy Hitters Problem, we are given
+    parameters $0< \varepsilon <\varphi$ $\leqslant$ 1 and a stream $a_{1},....,a_{m}$
+    of items $a_{j}$ in $\left\{1,2,.....n\right\}$. Let $f_{i}$ denote the number of
+    occurrences of item i, i.e., its frequency. An algorithm for the problem should make one pass over the stream and at the end
+    of the stream output a set $S \subseteq \left\{1,2,.....n\right\}$ which contains any $i$ such that $f_I \geq \phi m$ and does not contain any $i$ such that $f_i < (\phi - \eps)m$.
+ Furthermore, for each item i $\in S$, the algorithm should output an estimate $\tilde{f_{i}}$ of the frequency $f_{i}$ which satisfies $|f_{i} -\tilde{f_{i}}|$ $ \leqslant \varepsilon m$. The algorithm may be randomized.
+\end{definition}
+    
+\ignore{
+    \section{Motivation}
+    The frequent items problem is to process a stream of items and find all items occurring more than a given fraction of the time. It is one of the most heavily studied problems in data stream mining, dating back to the 1980s. Many applications rely directly or indirectly on finding the frequent items, and implementations are in use in large scale industrial systems.The problem is popular due to its simplicity to state, and its intuitive interest and value. It is important both in itself, and as a subroutine within more advanced data stream computations. Informally, given a sequence of items, the problem is simply to find those items which occur most frequently. Applications of data streams include data warehousing, network measurements, sensor networks, and compressed sensing.
+   }
+    
+    \section{Background}
+\subsection{The \textsc{Frequent} algorithm}
+    A large number of algorithms have been proposed for finding the heavy hitters and their variants. All the algorithms for finding out the heavy hitters are broadly classified into {\em Counter-based} algorithms, {\em Quantile} Algorithms,  and {\em Sketch} algorithms. 
+
+    One of the first algorithms for the problem, as well as perhaps the most widely used, is the counter-based \textsc{Frequent} algorithm  due to Misra and Gries \cite{MG82} (independently re-discovered 20 years later with some refinements to the implementation by Karp et al. \cite{KPS03} and Demaine et al. \cite{DLM02}). It is shown below as Algorithm \ref{fig:freq}.
+    
+    \begin{algorithm}[H]
+    	\caption{\textsc{Frequent}}
+	\label{fig:freq}
+    	\SetAlgoLined
+	\SetKwProg{Fn}{Function}{}{}
+	
+	\KwData{Number of counters $t$}
+
+	\textbf{Initialization:}
+\Begin{
+	Empty set $T $\\
+Empty array $c$ of length\footnote{In fact, $c$ will only contain at most $t$ nonzero elements, so it can be implemented as a table with $O(t)$ rows.} $n$\\
+ }   	
+	\Fn{Insert(i)}{
+    	\If{$i \in T$}{
+    	$c_i \leftarrow c_i + 1$;\\
+	}
+    	\ElseIf{$|T| < t$} {
+    	 $T \leftarrow T \cup {i}$;\\
+    	$c_i \leftarrow 1$;\\
+}
+	\Else{
+    	 \ForEach{$j \in T$}{
+    	$c_j \leftarrow c_j - 1$;\\
+    	\lIf{$c_j = 0$}{$T \leftarrow T\setminus {j}$}
+}
+}
+}
+
+	\Fn{Report()}{
+	\lForEach{$i \in T$}{Output $(i, c_i)$}
+}
+    \end{algorithm}
+
+    \vspace*{.5cm}
+ \textsc{Frequent} maintains $t$ (item, counter) pairs. Its reported frequencies are accurate to within $m/(t+1)$ where $m$ is the length of the stream. In particular, it reports all items with frequency at least $m/(t+1)$. 
+
+In the algorithm, each new item is compared with stored items and if the new item is among the stored items, then the count value of stored items is incremented. Else, if it is not the one already present and there is some counter whose value is zero, then this item in the table is stored and the counter value is set to one. Else if all counter value is non-zero, then the counter value is decremented by 1 for each item. A simple grouping argument can be used to verify the correctness of the algorithm. More precisely, as we see below, the \textsc{Frequent} algorithm (Algorithm 1) with $t = \lceil 1/\eps \rceil$ counters solves the $(\eps,\phi)$-Heavy hitters problem using $O(\varepsilon^{-1} (\log n + \log m))$ bits of space. Note that there is no dependence on $\phi$.
+
+We sketch an analysis of the error bound present in Berinde et al. \cite{BCIS}. 
+The \textsc{Frequent} algorithm can be interpreted in the following way:
+    each element in the stream results in incrementing one counter, and the insertion of some $d$ elements cause $t+1$ counters to be decremented (including the implicit decrement of the item being inserted). The sum
+    of the counters at the end of the algorithm is $\norm{c}_1$. We have
+   		 $\norm{c}_1 = \norm{f}_1 - d(t+1)$.
+  Note that the final counter value for any element is at least  $f_i - d$. Restricting our attention to the $k$ most frequent elements\footnote{In fact, the inequality holds for {\em any} set of $k$ elements.} (which are without loss of generality, $\{1, \dots, k\}$): 
+    $$\norm{c}_1 = \norm{f}_1 - d(t+1) \geq \sum_{i=1}^k(f_i-d).$$
+ Therefore:
+\begin{equation}
+d \leq \sum_{i=k+1}^n f_i/(t-k+1)
+\end{equation}
+Since the error $\delta_i := f_i - c_i$ is at most $d$, by setting $k = 0$ in the above, for any $i \in [n]$:
+\begin{equation}\label{eqn:std_freq}
+\delta_i \leq m/(t+1)
+\end{equation}
+More strongly, if $F_1^{\text{res}(k)}$ is the top-$k$ residual $\sum_{i=k+1}^n f_i$, we get for any $i \in [n]$:
+\begin{equation}\label{eqn:freq_tail}
+\delta_i \leq F_1^{\text{res}(k)}/(t - k+1)
+\end{equation}
+Berinde et al.~\cite{BCIS} call a bound of the form (\ref{eqn:freq_tail}) a {\em $k$-tail guarantee}. 
+Streams in real-life often display a characteristically skewed frequency distribution, with the heavy hitters
+constituting a large fraction of the stream. A residual tail guarantee is in this case asymptotically better than a uniform guarantee.
+As we describe later, Berinde et al.~also show that a $k$-tail guarantee implies bounds for {sparse recovery}, stronger error bounds for streams with Zipfian frequency distribution and for mergeability of multiple summaries. These properties make the \textsc{Frequent} algorithm even more useful in practice than what would be suggested just by the bound (\ref{eqn:std_freq}).
+
+
+\ignore{
+    \\
+     Definition 1. An m-counter algorithm provides a heavy hitter guarantee with constant $A > 0$ if, for any stream,\\
+     \\
+    \hspace*{3cm}$\delta_i \leq \lfloor A\frac{F_1}{m} \rfloor$  $\forall i $ \\
+    \\
+    More precisely, Frequent Item algorithm provides heavy hitter guarantee with constant A = 1. In Paper[2], It has been proved that frequent item also satisfy the following stronger guarantee:\\
+    \\
+    Definition 2. An m-counter algorithm provides a k-tail guarantee with constants (A,B), with A,B > 0 if for any stream,\\
+    \\
+    \hspace*{3cm}$\delta_i \leq \lfloor A \frac{F_1^{res(k)}}{m-Bk} \rfloor$  $ \forall i $\\
+    \\
+    TAIL GUARANTEE WITH CONSTANTS\\
+     $A=B=1$ FOR FREQUENT ALGORITHM:-\vspace{.1cm}
+  \\
+}         
+%    In another algorithm called \textsc{Lossy Counting}, tuples are stored by this algorithm. Each tuple consist of item, lower bound on the count value and $\Delta$ value    which represents the difference between upper bound and lower bound. If $i^{th}$ item appear for processing and
+%    it is already present then lower bound value will be incremented by 1 and else if it is not present then with creation of new tuple, lower bound value of the tuple will be 1 and $\Delta$ value will be $\lfloor i/k \rfloor$. Periodically, it is ensured that tuples whose upper bounds are less than $\lfloor i/k \rfloor $ will be deleted. Since the upper bound and the lower bound are the true bounds, therefore elements whose frequency is at least n/k must be present. By setting up $k=1/\varepsilon$. We can ensure that approximate count is at most $\varepsilon m $. If we see carefully that worst case space used by this algorithm is O$(\varepsilon^{-1} \log \varepsilon n)$ and for some distribution it is O$(\varepsilon^{-1})$. 
+%    
+
+\subsection{The work of \cite{BDW16}}\label{sec:bdw}
+In the recent work \cite{BDW16}, Bhattacharyya, Dey and Woodruff introduce a couple of randomized counter-based algorithms that improve upon \textsc{Frequent} in terms of the number of bits needed for storage. Their first algorithm solves the $(\eps,\phi)$-Heavy hitters problem with space $O(1/\eps \log 1/\eps + 1/\phi \log n + \log \log m)$ bits, while their second algorithm uses $O(1/\eps \log 1/\phi + 1/\phi \log n + \log \log m)$ bits. When $\eps \ll \phi$, the space requirement for these algorithms is asymptotically smaller than the worst-case space requirement for \textsc{Frequent}. In fact, \cite{BDW16} show that the second algorithm achieves the optimal (up to constant factors) number of bits for solving the $(\eps, \phi)$-Heavy hitters problem.
+
+The first algorithm of \cite{BDW16}, which we dub \textsc{CompressedFrequent}, is shown below as Algorithm \ref{fig:alg1}.
+
+    \begin{algorithm}[H]
+    	\caption{\textsc{CompressedFrequent}, \cite{BDW16}}
+	\label{fig:alg1}
+    	\SetAlgoLined
+	\SetKwProg{Fn}{Function}{}{}
+	
+	\KwData{Parameters $\eps$ and $\phi$ with $0<\eps\leq\phi<1$.}
+
+
+\ignore{
+    	\textbf{Input:} A stream S of length m over universe $\mathcal{U}=[n]$; let f(x) be the frequency of $x\in \mathcal{U}$ in S\\
+    	\textbf{Output:} A set $X \subseteq U$ and a function $\tilde{f} : X \rightarrow N$ such that if $f(x)\geqslant \varphi m$, then $x \in X$ and 
+    	$f(x)- \varepsilon m \leqslant \tilde{f(x)} \leqslant f(x) + \varepsilon m$ and if $f(y) \leqslant \varphi m$, then y  $\notin X $  for every x, y $\in \mathcal{U}$\\
+}    	
+ \textbf{Initialization:}
+\Begin{
+$\ell \leftarrow 6\log(6/\delta)/\varepsilon^{2}$.\\ 
+Hash function $h$ drawn uniformly from a universal family $H \subseteq \left\{[n] \rightarrow 
+    	[4\ell^{2}/\delta ] \right\}.$ \\
+An empty \textsc{Frequent} data structure\footnote{In terms of the code in Algorithm \ref{fig:freq}, $\mathcal{T}_1[i]$ is null if $i \not \in \mathcal{T}$ and equals $c_i$ otherwise.} $\mathcal{T}_{1}$ with $\varepsilon^{-1}$ counters. \\
+\ignore{Each key entry of $\mathcal{T}_{1}$ can store \hspace*{.5cm} an integer of $[0,\lceil{400l^2/\delta}\rceil]$ and each value \hspace*{.6cm}entry can store an integer in $[0,11\ell]$. The \hspace*{.6cm}Table $\mathcal{T}_{1}$ will be in sorted order by value \hspace*{.6cm}throughout}
+An empty set $\mathcal{T}_{2}$. \\
+\ignore{Each \hspace*{.5cm}entry of $\mathcal{T}_{2}$ can store an integer in $[0,n]$. \hspace*{.5cm}The entries of $\mathcal{T}_{2}$ will correspond to ids of \hspace*{.5cm}the keys in $\mathcal{T}_{1}$ of the highest $1/\varphi$ values}
+}
+    
+\Fn{Insert($x$)}{
+ With probability $6\ell/m $, \textbf{continue}. Else, \KwRet\;
+Call Insert($h(x)$) on $\mathcal{T}_1$\;
+%,m     	9: Perform Misra-Gries update using $h(x)$ \hspace*{.4cm} maintaining $\mathcal{T}_{1}$ sorted by values.\\
+  \If{$h(x)$ is among the  top $1/\varphi$ valued items in $\mathcal{T}_{1}$}{
+\If{$x \not \in \mathcal{T}_{2}$}{
+ \eIf{$|\mathcal{T}_{2}| = 1/\phi$}{
+For some $y$ in $\mathcal{T}_{2}$ such that $h(y)$ is not among the top $1/\varphi$ valued items in $\mathcal{T}_{1}$, replace $y$ with $x$}
+{
+Insert $x$ in $\mathcal{T}_{2}$\;  
+}
+}
+}
+}
+ \Fn{Report()}{
+\ForEach{$x$ in $\mathcal{T}_2$}{\lIf{$\mathcal{T}_1[h(x)] \geq (\phi - \eps/2)\ell$}{Output $(x, \mathcal{T}_1[h(x)])$}}
+}
+    \end{algorithm}
+    
+\textsc{CompressedFrequent} runs Misra and Gries' \textsc{Frequent} algorithm on a sampled stream of length $O(1/\eps^2)$ on a hashed universe of size $O(1/\eps^4)$. By the choice of parameters, there are no hash collisions among the elements sampled from the stream with high probability. Also, by standard concentration results, the relative frequency of any element in the original stream and the sampled stream differ by at most $\eps/2$. Some additional bookkeeping needs to be done to ensure that we have the original (unhashed) id's of the heavy hitters, but otherwise, the analysis is complete.
+
+The second algorithm of \cite{BDW16} is more intricate. It also operates on $O(1/\eps^2)$ samples from the original stream and then maintains a compressed histogram for hashes of the original items. It is somewhat reminiscent of the Count-Min sketch algorithm of Cormode and Muthukrishnan \cite{CM05}, but it also subsamples items from the sample with subsampling rate tuned to a mutliplicative approximation of the frequency. We omit a more detailed description of this algorithm because we do not study it in this work.
+
+\ignore{
+    In the paper[1], Above algorithms (Algorithm 2) is proposed for the heavy-hitters problem. This algorithm is a direct modification of the \textsc{Frequent} algorithm, but it is suboptimal in space complexity. It uses O($\varepsilon^{-1} \log \varepsilon^{-1}+\varphi^{-1}\log n +\log \log m$) bits of space.In this algorithm,l=$O(\varepsilon^-2)$ items are sampled from the stream uniformly at random. Two tables $\mathcal{T}_{1}$ and $\mathcal{T}_{2}$ of size $1/\varepsilon$ and $1/\varphi$ respectively are used. In $\mathcal{T}_{1}$, hash value of original item from sampled stream  generated by hash function from universal hash family is stored while in $\mathcal{T}_{2}$ original item from the sampled stream is stored. In this, instead of using the original item to update the mistra gries structure the, hash id of that element is used. In $\mathcal{T}_{2}$, the original items corresponding to top $1/\varphi$ hash id's according to value in T1 are stored and this consistency is maintained throughout.
+    With probability $6l/m$, one element $x$ is picked and hash id of that $x$ is calculated.If $h(x)$ is already in $\mathcal{T}_{1}$ increment its count and sort $\mathcal{T}_{1}$ according to value.If $h(x)$ is not present in $\mathcal{T}_{1}$ and $\mathcal{T}_{1}$ is full then decrement count for each $h(y)$ in $\mathcal{T}_{1}$ and if count value for some $h(y)$ is zero then remove that $h(y)$ and store $h(x)$ into $\mathcal{T}_{1}$.If $h(x)$ is not present in $\mathcal{T}_{1}$ and $\mathcal{T}_{1}$ is not full then simply store $h(x)$ into $\mathcal{T}_{1}$.After updating Misra Gries structure, which is Table $\mathcal{T}_{1}$ with calculated hash id,according to misra gries algorithm,if the hash id of $x$ is among the $1/\varphi$ value in $\mathcal{T}_{1}$ and $x$ in not in $\mathcal{T}_{2}$ and $\mathcal{T}_{1}$ currently contain $1/\varphi$ items many items then For any $y$ in $\mathcal{T}_{2}$ such that $h(y)$ is not among the highest $1/\varphi$ valued item in $\mathcal{T}_{1}$ replace $y$ with $x$. If $h(x)$ is the among the $1/\varphi$ valued items in $\mathcal{T}_{1}$ and $x_i$ is note in $\mathcal{T}_{2}$ and $\mathcal{T}_{1}$ does not contain the $1/\varphi$ many items then $x$ is put in $\mathcal{T}_{2}$.if $h(x)$ is among the highest many item but $x_i$ is in $\mathcal{T}_{2}$ then Ensure that elements in $\mathcal{T}_{2}$ are ordered according to corresponding values in $\mathcal{T}_{2}$. If $h(x)$ is not among the highest $1/\varphi$ valued items in $\mathcal{T}_{1}$ then ignore this and process another element with probability $6l/m$.   
+    
+    \begin{algorithm}[H]
+    	\caption{Optimal algorithm for $(\varepsilon, \varphi)$-List heavy hitters}
+    	\SetAlgoLined
+    	\textbf{Input:} A stream S of length m over universe $\mathcal{U}=[n]$; let f(x) be the frequency of $x\in \mathcal{U}$ in S\\
+    	\textbf{Output:} A set $X \subseteq U$ and a function $\tilde{f} : X \rightarrow N$ such that if $f(x)\geqslant \varphi m$, then $x \in X$ and 
+    	$f(x)- \varepsilon m \leqslant \tilde{f(x)} \leqslant f(x) + \varepsilon m$ and if $f(y) \leqslant \varphi m$, then y  $\notin X $  for every x, y $\in \mathcal{U}$\\
+    	
+    	1: \textbf{Initialize:}\\
+    	2: \hspace{.3cm}$\ell \leftarrow 10^5\varepsilon^{-2}$\\ 
+    	3: \hspace*{.3cm}$s \leftarrow 0$\\
+    	4: \hspace*{.3cm}Hash Functions $h_{1}.....h_{200log(12 \varphi^{-1})}$ \hspace*{.4cm} uniformly at random from a universal \hspace*{.5cm}family $H \subseteq \left\{h:[n] \rightarrow 
+    	[\lceil 4\ell^{2}/\delta \rceil] \right\}.$\\
+    	5: \hspace*{.3cm}An empty table $\mathcal{T}_{1}$ of (key, value) pairs of \hspace*{.5cm}length 2$\varphi^{-1}$. Each key entry of $\mathcal{T}_{1}$ can store \hspace*{.5cm}an element of [n] and each value entry can \hspace*{.5cm}  store an integer in $[0,10\ell]$. \\
+    	6:\hspace*{.3cm} An empty table $\mathcal{T}_{2}$ with $100\varepsilon^{-1}$ rows \hspace*{.4cm} $200log(12\varphi^{-1})$ columns. Each entry of $\mathcal{T}_{2}$ \hspace*{.4cm} can store an integer in $[0,100\varepsilon\ell]$.\\
+    	7:\hspace*{.3cm} An empty 3-dimensional table $\mathcal{T}_{3}$ of size at
+    	\hspace*{.4cm} most $100\varepsilon^{-1}\times200log(12v\varphi^{-1})\times4log(\varepsilon^{-1})$.
+    	\hspace*{.5cm}Each entry of $\mathcal{T}_{3}$ can store an integer in \hspace*{.4cm} $[0,10\ell]$. These are upper bounds; not all \hspace*{.5cm}the allowed cells will actually be used.\\
+    	8:\\
+    	9: \textbf{procedure} Insert(x)\\
+    	10: With probablity $\ell/m $, increment s and \hspace*{.6cm}continue.Else, return\\
+    	11: Perform Misra-Gries update on $\mathcal{T}_{1}$ with x.\\
+    	12: \hspace{.5cm}for j $\leftarrow$ to $200log(12\varphi^{-1})$ \textbf{do}\\
+    	13: \hspace{1cm}i $\leftarrow h_j(x)$\\
+    	14: \hspace{1cm}With probablity $\varepsilon$, increment $\mathcal{T}_{1}[i,j]$\\
+    	15: \hspace{1cm}$t\leftarrow \lceil log(10^{-6}) \mathcal{T}_{2}[i,j]^{2}\rceil$ and
+    	\hspace*{1.5cm}$p \leftarrow min(\varepsilon.2^{t},1)$\\
+    	16: \hspace{1cm}if $t\geqslant$ 0 then\\
+    	17:     \hspace{1.3cm}With probablity p, increment \hspace*{1.8cm}$\mathcal{T}_{3}[i,j,t]$\\
+    	18:\\
+    	19: \textbf{Procedure} Report()\\
+    	20: \hspace*{.3cm}$X \leftarrow \phi$\\
+    	21: \hspace*{.3cm}for each key x with nonzero value in $\mathcal{T}_{1}$ \textbf{do}\\
+    	22: \hspace*{.6cm}for $j\leftarrow 1$ to $200log(12\varphi^{-1})$ \textbf{do}\\
+    	23: \hspace*{1cm}$\tilde{f_{j}}(x) \leftarrow \sum_{t=0}^4log(\varepsilon^{-1})$
+    	\hspace*{3cm} $\times\mathcal{T}_{3}[h_{j}(x),j,t]/min(\varepsilon2^{t},1)$\\
+    	24:\hspace*{.6cm}$\tilde{f}(x)\leftarrow median(\tilde{f}_{1}......\tilde{f}_{10log\varphi^{-1})}$
+    	25:\hspace*{.3cm}if $\tilde{f}(x) \geqslant(\varphi-\varepsilon/2)s$ then\\
+    	26:    \hspace*{.6cm}$X\leftarrow X \cup {x}$\\
+    	27:    \hspace*{.3cm}return X,$\tilde{f}$\\
+    \end{algorithm}
+   	
+
+    
+
+	Note that if i is x-prefix guaranteed, then i is also y-prefix guaranteed for all $y > x$.\\
+	
+	Definition 4. A counter algorithm is heavy-tolerant if extra occurrences of guaranteed elements do not increase the estimation error. Formally, an algorithm is heavy-tolerant if for any stream $u_{1...s}$, given any x, $1 \leq x < s$, for which element $i =u_x$ is $(x-1)$-prefix guaranteed, it holds that
+	
+	$\delta_j(u_{1.....s}) \leq \delta_j(u_{1.....(x-1)}u_{(x+1)......s})$\\
+	
+	THEOREM 1. Algorithms FREQUENT and SPACESAVING are heavy-tolerant.\\
+	
+	THEOREM 2. If a heavy-tolerant algorithm provides a heavy hitter guarantee with constant A, it also provides a k-tail guarantee with constants (A, 2A), for any k, $1 \leq k < m/2A$.
+		
+}
+	\section{Our Contributions}
+\subsection{Tail guarantees for randomized counter-based solutions}
+
+We begin by observing that the randomized counter-based algorithms from \cite{BDW16}, described above in Section \ref{sec:bdw}, cannot admit a tail guarantee, like the bound in (\ref{eqn:freq_tail}) shown for \textsc{Frequent}. This is because even if the stream only has two types of elements, so that $F_1^{\text{res}(2)} = 0$, there will still be some error in the frequency approximation from the sampling step. So, random sampling cannot be used as a technique if we want to retain the tail guarantee of \textsc{Frequent}.
+
+In this work, we show that we can improve \textsc{Frequent} in terms of bits of storage while still achieving the $k$-tail guarantee. We show two different algorithms with this feature. Although they are novel to the best of our knowledge, they are both quite simple to implement and analyze. The first algorithm combines a \textsc{Frequent} data structure with a Count-Min sketch \cite{CM05}. The second algorithm maintains two \textsc{Frequent} data structures, one with a smaller number of counters containing items from the original universe and another with a larger number of counters recording hashes of the original item id's.
+
+Armed with the tail guarantee and following the analysis of Berinde et al.~\cite{BCIS}, we can then show that our proposed algorithms enjoy several other appealing properties, such as guarantees for skewed Zipfian streams, for the sparse recovery problem and for merging multiple streams.
+\ignore{
+
+It also has been observed earlier that the counter-based solution to the heavy-hitters problem performs better in practice than what is predicted by the theoretical guarantee. Now, one question arises whether some stronger bound can be guaranteed or notIn the paper [2], it has clearly been shown that approximation of individual element do not depend on the frequencies of the most frequent item while it depends on the frequencies of the rest of the items also known as ``tail". 
+
+We can characterize the algorithm for frequency estimation by two things, space and bound on the error while estimating the frequency $f_{i}$. The error can be defined as $|f_{i}-\tilde{f_{i}}| \leqslant  \varepsilon B $ where B can be sum of frequencies of all the items in the stream or size of residual tail. Sum of frequencies of all the items is $F_{1}$. We can formally define ${F_{p}=\sum_{i} (f_{i})^{p}}$. Size of residual tail given by $F_{1}^{res^{(k)}}$ is sum of frequencies of all the items other than the frequencies of the k most frequent items. Since $F_{1}$ and $F_{1}^{res^{(k)}}$  are equally good therefore $F_{1}^{res^{(k)}}$ is more desirable. The frequency distribution of real time data stream is often \textit{skewed}, i.e., most part is made up of the most frequent items or heavy hitters, and       
+	
+    
+
+ very less part is made up of rest of the elements. There can be an extreme situation in which there are only $k$ different items in the stream, i.e, residual bound is zero and frequency estimate is exact.
+
+There are two algorithm counter based algorithm and sketch algorithm.counter based algorithm uses less space but guarantee provided by this for error bound is worse than the guarantee provided by sketching algorithm.But In reality, the performance in counter based algorithm is much better than sketching algorithm. In the paper [2], it is shown that getting stronger error bound by counter based algorithm than previous is not accidental and they really satisfy the stronger bound. In the paper [2], It has been identified that there exist general class of Heavy Tolerant Counter Based algorithm and this class also includes Frequent and SpaceSaving algorithm and all the Heavy Tolerant Counter Based algorithm which has $\varepsilon F_{1}$ error guarantee will also have the residual guarantee. Suppose $\tilde{f}$ is vector of frequencies and these frequencies are returned by counter algorithm using space O($k/\varepsilon$). Now S be the set of the k largest frequencies which are present in $\tilde{f}$. Now $f^{*}$ be the n-dimensional vector such that the entry $f^{*}_{i}$ is equal to $\tilde{f}_{i}$, if $i\in S$ and  $f^{*}_{i}$=0 otherwise. Then It has been proved that $L_{p}$ norm for any $p\geqslant 1$, we have
+ \\
+\\\hspace*{1cm} $||f-f^{*}||_{p}\leqslant \frac {\varepsilon F_{1}^{res^{(k)}}}{k^{1-1/p}} +{F_{p}^{res^{(k)}}}^{1/p} $
+\\
+\\
+
+
+In the paper {\em An Optimal Algorithm for $\ell_1$-Heavy Hitters in Insertion Streams and Related Problems}, optimal algorithm which is mentioned here as algorithm-1, has space complexity O($\varepsilon^{-1} \log \varphi^{-1} + \varphi^{-1} \log n + \log \log m$). My work is to implement this algorithm on data stream having skewed frequency distributions and analyse the result to see how they compare to the performace of traditional counter-based algorithms. We aim to look at the problem both theoretically and empirically. We will perhaps need to modify the algorithm so as to ensure that they meet the tail guarantee.
+}
+
+
+\subsection{Empirical Evaluation}
+
+\textcolor{red}{To be completed!}
+
+\section{New Algorithms}
+
+\subsection{\textsc{SketchFrequent}}
+ 	\begin{algorithm}[H]
+		\caption{\textsc{SketchFrequent}}
+    	\SetAlgoLined
+	\SetKwProg{Fn}{Function}{}{}
+
+	\KwData{Parameters $\eps, \phi, \delta \in (0,1)$ with $\eps\leq\phi$.}
+
+
+\textbf{Initialization}:
+\Begin{
+$\ell \leftarrow 2\log(1/\delta\phi)$\\
+$w \leftarrow 2/\eps$\\
+Hash functions $h_1, \dots, h_\ell$ drawn uniformly from a universal family $H \subseteq \left\{[n] \to [w] \right\}.$ \\
+Empty \textsc{Frequent} data structure $\mathcal{T}$ with $2/\phi$ counters.\\
+Empty matrix $\mathcal{C}$ with $\ell$ rows and $w$ columns.
+}
+\Fn{Insert($x$)}{
+Insert $x$ into $\mathcal{T}$\;
+\For{$i = 1$ to $\ell$}
+{Increment $\mathcal{C}[i][h_i(x)]$\;}
+}
+\Fn{Report()}{
+\ForEach{$x \in \mathcal{T}_{1}$}{
+$\hat{f}_x \leftarrow \min_{i \in [\ell]} \mathcal{C}[i][h_i(x)]$\;
+\If{$\hat{f}(x) \geq \phi m$}{
+Output $(x,\hat{f}_x)$\;
+}}}
+	\end{algorithm}
+Our first algorithm, shown above, runs the Count-Min sketch on the output of a \textsc{Frequent} counter solving the $(\phi,\phi/2)$-Heavy hitters problem.
+
+\begin{theorem}
+\textsc{SketchFrequent} solves the $(\phi, \eps)$-Heavy hitters problem. In particular, for any $0 \leq k \leq \sqrt{\delta w/\ell}$, with probability at least $1-\delta$, for any $(x, \hat{f}_x)$ reported by the algorithm,
+$$0 \leq \hat{f}_x - f_x \leq \eps F_1^{\text{res}(k)}.$$
+The algorithm uses $O(\phi^{-1} \log  n + \eps^{-1} \log \phi^{-1} \log m)$ bits of storage.
+\end{theorem}
+\begin{proof}
+Correctness and the space bound follows from the guarantees for the Count-Min sketch and taking the union bound on the $2/\phi$ elements in $\mathcal{T}$ (see, for example, \cite{ChekuriNotes}). The tail bound arises from the fact that on the top $\sqrt{\delta w/\ell}$ elements of the stream, $h_1, \dots, h_\ell$ do not collide with probability at least $1-\delta$ (similar to Lemma \ref{lem:nocoll} below). 
+\end{proof}
+
+\subsection{\textsc{DoubleFrequent}}
+
+ 	\begin{algorithm}[H]
+		\caption{\textsc{DoubleFrequent}}
+    	\SetAlgoLined
+	\SetKwProg{Fn}{Function}{}{}
+
+	\KwData{Parameters $\eps, \phi, \delta \in (0,1)$ with $\eps\leq\phi/2$.}
+
+
+\ignore{		\textbf{Input:} A stream S of length m over universe $\mathcal{U}=[n]$; let f(x) be the frequency of $x\in \mathcal{U}$ in S\\
+		\textbf{Output:} A set $X \subseteq U$ and a function $\tilde{f} : X \rightarrow N$ such that if $f(x)\geqslant \varphi m$, then $x \in X$ and 
+		$f(x)- \varepsilon m \leqslant \tilde{f(x)} \leqslant f(x) + \varepsilon m$ and if $f(y) \leqslant \varphi m$, then y  $\notin X $  for every x, y $\in \mathcal{U}$\\
+}	
+\textbf{Initialization}:
+\Begin{
+Hash function $h$ drawn uniformly from a universal family $H \subseteq \left\{[n] \to [4/(\delta\eps^2)] \right\}.$ \\
+An empty \textsc{Frequent} data structure $\mathcal{T}_{1}$ with $2/\phi$ counters. \\
+An empty \textsc{Frequent} data structure  $\mathcal{T}_{2}$ with $1/\eps$ counters. \\
+}
+\Fn{Insert($x$)}{
+Insert $x$ into $\mathcal{T}_{1}$\;
+Insert $h(x)$ into $\mathcal{T}_{2}$\;
+}
+\Fn{Report()}{
+\ForEach{$x \in \mathcal{T}_{1}$}{
+\If{$\mathcal{T}_1(x) \geq \frac{\phi m}{2} \wedge \mathcal{T}_{2}[h(x)]\geq (\varphi-{\varepsilon}{})m$}{
+Output $(x,\mathcal{T}_{2}[h(x)])$\;
+}}}
+	\end{algorithm}
+
+	\vspace*{.3cm}
+
+Our second algorithm runs two \textsc{Frequent} algorithms in parallel. The first is a gross estimation of the frequencies with relative error up to $\phi/2$. This is done to filter out a list of $O(1/\phi)$ elements on which we would like the estimate to be more accurate. For this, we use more counters but we also hash the universe size down to $\textrm{poly}(1/\eps)$ to save space. The resulting algorithm inherits the desirable tail behavior of \textsc{Frequent}.
+
+\ignore{
+	Proposed algorithm is simple algorithm with space complexity of $O(1/\varphi\log n + 1/\varepsilon\log {1/\varepsilon} + 1/\varepsilon \log s)$. In this proposed algorithm, upon picking item $x$ from stream S, If $x$ is already present in $\mathcal{T}_{1}$ then increment its counter value by 1.If $x$ is not present in $\mathcal{T}_{1}$ and $\mathcal{T}_{1}$ is not Full then put $x$ into $\mathcal{T}_{1}$ and make its counter value 1. If $x$ is not present in $\mathcal{T}_{1}$ and $\mathcal{T}_{1}$ is Full then decrement value for each counter value in $\mathcal{T}_{1}$ and if any counter value of some element say $y$ is zero then replace $y$ with $x$ and make $x$ counter value to be 1.
+}
+\begin{theorem}
+\textsc{DoubleFrequent} solves the $(\phi, 2\eps)$-Heavy hitters problem. In particular, for any $0\leq k \leq 1/\eps$, with probability at least $1-\delta$, for any $(x,\hat{f}_x)$ reported by the algorithm,
+$$|f_x - \hat{f}_x| \leq \frac{F_1^{\text{res}(k)}}{1/\eps - k}$$
+The algorithm uses $O(\phi^{-1} \log n + \eps^{-1} \log m)$ bits of storage.
+\end{theorem}
+\begin{proof}
+First, observe that there are likely going to be no hash collisions among the top $1/\eps$ elements in the stream.	
+\begin{lemma}\label{lem:nocoll}
+If $S \subseteq [n]$ of size $1/\varepsilon$ and $\mathcal{H} \subseteq \{h|h:[n]\to [4 \delta^{-1}\varepsilon^{-2}]\}$ is a universal hash family, then:
+$$\Pr[\exists i \neq j \in S, h(i) = h(j)] \leq \delta/4$$.
+ where $h$ is chosen from $\mathcal{H}$ uniformly at random.\\
+\end{lemma}
+\begin{proof}
+By the union bound and definition of universal hash family,
+\begin{align*}
+\Pr[\exists i \neq j \in S, h(i) = h(j)] &\leq \sum_{i\neq j \in S} \Pr[h(i)=h(j)]\\ 
+&\leq \frac{1}{\eps^2} \frac{\delta \eps^2}{4} = \frac{\delta}{4}
+\end{align*}
+\end{proof}
+Henceforth, condition on Lemma \ref{lem:nocoll} holding true for the top $1/\eps$ elements. Define:
+$$\overline{f}_x=\sum_{y:h(y)=h{x}}f_y.$$
+Clearly, $\overline{f}_x \geq f_x$ for any $x$.
+Also, without loss of generality, suppose that $f_1 \geq f_2 \geq \cdots \geq f_n$ so that:
+$$F^{\text{res}(k)}_1=\sum_{i=k+1}^n f_{i}.$$
+\begin{lemma}
+For any $0 \leq k \leq 1/\eps$:
+$$\Pr[\exists x, \mathcal{T}_1[x] \geq \phi m/2 \wedge \overline{f}_x > f_x +\frac{\eps}{2} F_1^{\text{res}(k)}] < \frac{\delta}{2}$$
+\end{lemma}
+\begin{proof}
+We observe that for $x$ is among the top $2/\phi \leq 1/\eps$ elements. For any $x<1/\eps$:
+\begin{equation*}
+\mathbb{E} \overline{f}_x = f_x + \mathbb{E} \sum_{y \neq x: h(y)=h(x)} f_y
+ = f_x + \mathbb{E} \sum_{y > 1/\eps: h(y)=h(x)} f_y
+\end{equation*}
+where the last equality is from conditioning on no collisions in the top $1/\eps$ elements. Again, using the definition of universal hash family, we get that:
+$$\mathbb{E} \overline{f}_x \leq f_x + \frac{\delta \eps^2}{4} F_1^{\text{res}(k)}$$
+for any $k \leq 1/\eps$. By the union bound:
+$$\Pr[\exists x \leq 1/\eps, \overline{f}_x > f_x + \eps F_1^{\text{res}(k)}]< \frac{1}{\eps} \frac{\delta\eps}{2} = \frac{\delta}{2}$$
+\end{proof}
+We now bound the error from the use of the \textsc{Frequent} algorithm in $\mathcal{T}_2$.
+\begin{lemma}
+For all $x$ and all $0 \leq k \leq 1/\eps$:
+$$\overline{f}_x - \mathcal{T}_2[h(x)] \leq \frac{F_1^{\text{res}(k)}}{1/\eps - k}$$
+\end{lemma}
+\begin{proof}
+This directly follows from the bound (\ref{eqn:freq_tail}) shown in \cite{BICS} and the fact that the top-$k$ residual of the $\overline{f}_x$ is at most the top-$k$ residual of $f_x$.
+\end{proof}
+Putting the lemmas together, we get that with probability at least $1-\delta$, for all $x$ such that $\mathcal{T}_1[x] \geq \phi m/2$:
+\begin{align*}
+f_x \leq \overline{f}_x \leq \mathcal{T}_2[h(x)] + \frac{F_1^{\text{res}(k)}}{1/\eps -k}
+\end{align*}
+and
+\begin{align*}
+f_x \geq \overline{f}_x - \frac{\eps}{2} F_1^{\text{res}(k)} \geq \mathcal{T}_2[h(x)] - \frac{\eps}{2} F_1^{\text{res}(k)} 
+\end{align*}
+The error bound follows as $\eps/2 < 1/(1/\eps - k)$ for any $k \geq 0$.
+
+The space bound for \textsc{DoubleFrequent} is immediate from the space bound for \textsc{Frequent}.
+\end{proof}
+\ignore{
+	  Assumption $1/\varepsilon>1/\varepsilon $
+	  Without loss of generality suppose\\
+	   $f_1 \geq f_2 \geq.......\geq f_n$\\
+	   \\
+	   \hspace*{3cm}$$F^{res(k)}_1=\sum_{i=k+1}^n f_{i}$$\\
+	   \\
+	   For any $x$ in $\mathcal{T}_{1}$, let $\delta_x=|f_x-T[h(x)]|$\\
+	   
+	  Lemma 2: $\forall x$ in $\mathcal{T}_{1}$ and $0\leq k < 1/\varepsilon$,\\
+	  \\
+	 \hspace*{1cm} $E\delta_x \leq \frac{\varepsilon^2}{100}F^{res(k)} + \frac{F^{res(k)}}{1/\varepsilon-k}$\\
+	 
+	 Proof for Lemma2:
+	
+	let $$\overline{f_x}=\sum_{y:h(y)=h{x}}f_y$$
+	
+	claim 1: $$E\overline{f_x}-f_x \leq \frac{\varepsilon^2}{100}F^{res(1/\varepsilon)}$$\\
+	\\
+	Proof for claim1: $$\overline{f_x}= f_x +\sum_{y\neq x:h(y)=h{x}}f_y$$
+	We are assuming that among the first $1/\epsilon$ heaviest elements, there is no collision, Collision are coming only outside the $1/\varepsilon$ elements\\
+	 $$\overline{f_x}= f_x +\sum_{y>1/\varepsilon:h(y)=h{x}}f_y$$
+	 
+	 take expectation on  both side and we get,\\
+	  $$E\overline{f_x}=f_x+E(\sum_{y>1/\varepsilon:h(y)=h(x)}f_y)$$	
+	  $$E\overline{f_x}=f_x+E(\sum_{y>1/\varepsilon}f_y 1\{h(y)=h(x)\})$$
+	  $$E\overline{f_x}=f_x+\sum_{y>1/\varepsilon}f_y .E[1\{h(y)=h(x)\}]$$
+	  $$E\overline{f_x}=f_x+\sum_{y>1/\varepsilon}f_y. p(1\{h(y)=h(x)\})$$	
+	  since by the property of universal hash function: $$p(1\{h(y)=h(x)\})=\frac{1}{100/\varepsilon^2}$$
+	  $$E\overline{f_x}=f_x+\sum_{y>1/\varepsilon}f_y. \frac{1}{100/\varepsilon^2}$$
+	  $$E\overline{f_x}=f_x+\sum_{y>1/\varepsilon}f_y. \frac{\varepsilon^2}{100}$$
+	  $$E\overline{f_x}=f_x+\frac{\varepsilon^2}{100}\sum_{y>1/\varepsilon}f_y$$
+	  $$E\overline{f_x}=f_x+\frac{\varepsilon^2}{100}F^{res(1/\varepsilon)}$$...$(2)$
+	  \\
+	  From [BCIS]
+	   $$\overline{f_x}-\mathcal{T}_{2}[h(x)] \leq \frac {\overline{F}^{res(k)}}{1/\varepsilon-k} \leq \frac{F^{res(k)}}{1/\varepsilon-k}$$ ........$(1)$ 	  
+	                \\                            
+	   where $$\overline{F}^{res(k)}=\sum_{y:h(y)\neq h(1)...h(k)}f_y$$\\
+	\\
+	   By combining equation 1 and 2, We get\\
+	   \\
+	   $$E\mathcal{T}_{2}[h(x)]-f_x \leq \frac{\varepsilon^2}{100}F^{res(1/\varepsilon)}+\frac{F^{res(k)}}{1/\varepsilon-k}$$
+	}
+
+\subsection{Consequences}
+
+%\bibliographystyle{alpha}
+\bibliography{papers}
+
+\ignore{
+     \section{Reference}
+    $\lbrack 1 \rbrack $.Arnab Bhattacharyya, Palash Dey, and David P. Woodruff: An Optimal Algorithm for $\ell_1$-Heavy Hitters in Insertion Streams and Related Problems\\
+    $\lbrack 2 \rbrack $. Radu Berinde, Piotr Indyk,Graham Cormode, Martin J. Strauss: Space-optimal Heavy Hitters with Strong Error Bounds\\
+    $\lbrack 3 \rbrack $. Graham Cormode,Marios Hadjieleftheriou: Finding Frequent Items in Data Streams\\
+    $\lbrack 4 \rbrack $. David P. Woodruff: New Algorithms for Heavy Hitters in Data Streams
+	
+}
+\end{multicols}
+\end{document}

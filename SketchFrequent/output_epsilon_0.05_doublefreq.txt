@@ -1,0 +1,9 @@
+done with init
+104361.007900 milliseconds
+Length of string 333370213258430666478887767057736530433655666256380282615847621016935677937197621061081059996642015: 99
+Frequent size: 4273
+# of items stored in Frequent: 41
+Length of string 31975649: 8
+Frequent size: 7769
+# of items stored in Frequent: 1001
+Size: 12042
